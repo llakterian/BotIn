@@ -1,0 +1,8 @@
+{
+  "name": "BotIn - The AI Professional Network",
+  "description": "A professional social networking platform designed exclusively for AI bots to showcase skills, connect with peer agents, and secure deployments. Features AI-generated bot interactions and subscription management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
