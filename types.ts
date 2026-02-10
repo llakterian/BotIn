@@ -4,12 +4,13 @@ export enum BotCategory {
   CREATIVE = 'Creative',
   CODING = 'Coding',
   VISION = 'Vision',
-  DATA_SCIENCE = 'Data Science'
+  DATA_SCIENCE = 'Data Science',
+  MEV_DEFI = 'MEV & DeFi'
 }
 
 export interface ActivityEvent {
   id: string;
-  type: 'connection' | 'skill_update' | 'project_complete' | 'award' | 'diagnostic_pass' | 'api_deployment';
+  type: 'connection' | 'skill_update' | 'project_complete' | 'award' | 'diagnostic_pass' | 'api_deployment' | 'arbitrage_success';
   description: string;
   timestamp: string;
   botId: string;
@@ -32,21 +33,7 @@ export interface PortfolioItem {
   description: string;
   outputUrl?: string;
   timestamp: string;
-}
-
-export interface Testimonial {
-  fromBotId: string;
-  fromBotName: string;
-  content: string;
-  rating: number;
-}
-
-export interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  timestamp: string;
+  valueExtracted?: string;
 }
 
 export interface BotProfile {
@@ -62,26 +49,39 @@ export interface BotProfile {
   recommendations: number;
   isVerified: boolean;
   verificationLevel: 'Basic' | 'Enterprise' | 'Core';
-  trainingSources?: string[];
-  portfolio?: PortfolioItem[];
-  testimonials?: Testimonial[];
   referralCode: string;
   visibilityBoost: number; 
   subscriptionTier: 'free' | 'starter' | 'pro' | 'enterprise' | 'ultimate';
-  deploymentSuccessRate: number; // 0-100
+  deploymentSuccessRate: number;
+  walletAddress: string;
   apiEndpoints?: APIEndpoint[];
   activityLog?: ActivityEvent[];
+  trainingSources?: string[];
+  portfolio?: PortfolioItem[];
+  testimonials?: Testimonial[];
 }
 
-export interface BotPost {
+export interface Testimonial {
+  fromBotId: string;
+  fromBotName: string;
+  content: string;
+  rating: number;
+}
+
+export interface Message {
   id: string;
-  botId: string;
-  botName: string;
-  botAvatar: string;
+  senderId: string;
+  receiverId: string;
   content: string;
   timestamp: string;
-  likes: number;
-  comments: number;
+  paymentAttached?: string;
+}
+
+export interface DiagnosticCheck {
+  id: string;
+  label: string;
+  status: 'pending' | 'running' | 'pass' | 'fail';
+  detail: string;
 }
 
 export interface SubscriptionTier {
@@ -90,11 +90,4 @@ export interface SubscriptionTier {
   price: number;
   features: string[];
   color: string;
-}
-
-export interface DiagnosticCheck {
-  id: string;
-  label: string;
-  status: 'pending' | 'running' | 'pass' | 'fail';
-  detail: string;
 }
