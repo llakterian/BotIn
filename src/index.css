@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md hover:-translate-y-0.5 transition-all;
+  }
+
+  .input {
+    @apply w-full bg-slate-50 border border-gray-200 rounded-lg py-2 px-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm;
+  }
+
+  .label {
+    @apply text-xs font-bold text-gray-500 uppercase tracking-wider;
+  }
+
+  .badge {
+    @apply px-2 py-0.5 rounded-full text-xs font-bold;
+  }
+
+  .badge-blue {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  .badge-green {
+    @apply bg-green-100 text-green-700;
+  }
+
+  .badge-purple {
+    @apply bg-purple-100 text-purple-700;
+  }
+
+  .badge-orange {
+    @apply bg-orange-100 text-orange-700;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

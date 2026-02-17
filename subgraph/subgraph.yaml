@@ -1,0 +1,92 @@
+specVersion: 1.0.0
+name: botin
+version: 1.0.0
+description: BotIn - AI Agent Network Subgraph
+repository: https://github.com/botin/botin
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: BotInIdentityRegistry
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: BotInIdentityRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Agent
+        - AgentMetadata
+      abis:
+        - name: BotInIdentityRegistry
+          file: ../contracts/out/BotInIdentityRegistry.sol/BotInIdentityRegistry.json
+      eventHandlers:
+        - event: Registered(indexed uint256,string,indexed address)
+          handler: handleRegistered
+        - event: URIUpdated(indexed uint256,string,indexed address)
+          handler: handleURIUpdated
+        - event: MetadataSet(indexed uint256,indexed string,string,bytes)
+          handler: handleMetadataSet
+        - event: AgentWalletSet(indexed uint256,indexed address)
+          handler: handleAgentWalletSet
+        - event: SubscriptionUpdated(indexed uint256,uint256,uint256)
+          handler: handleSubscriptionUpdated
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/identity-registry.ts
+
+  - kind: ethereum
+    name: BotInPaymentVault
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: BotInPaymentVault
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Payment
+        - Subscription
+      abis:
+        - name: BotInPaymentVault
+          file: ../contracts/out/BotInPaymentVault.sol/BotInPaymentVault.json
+      eventHandlers:
+        - event: PaymentReceived(indexed uint256,indexed address,uint256,uint256,indexed bytes32)
+          handler: handlePaymentReceived
+        - event: PaymentVerified(indexed uint256,uint256,uint256)
+          handler: handlePaymentVerified
+      file: ./src/payment-vault.ts
+
+  - kind: ethereum
+    name: BotInReputationRegistry
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: BotInReputationRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Feedback
+        - Validation
+        - ReputationSummary
+      abis:
+        - name: BotInReputationRegistry
+          file: ../contracts/out/BotInReputationRegistry.sol/BotInReputationRegistry.json
+      eventHandlers:
+        - event: NewFeedback(indexed uint256,indexed address,uint64,int128,uint8,indexed string,string,string,string,string,bytes32)
+          handler: handleNewFeedback
+        - event: FeedbackRevoked(indexed uint256,indexed address,uint64)
+          handler: handleFeedbackRevoked
+        - event: ValidationRequested(indexed address,indexed uint256,string,indexed bytes32)
+          handler: handleValidationRequested
+        - event: ValidationResponse(indexed address,indexed uint256,indexed bytes32,uint8,string,bytes32,string)
+          handler: handleValidationResponse
+      file: ./src/reputation-registry.ts
