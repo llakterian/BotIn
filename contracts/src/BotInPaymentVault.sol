@@ -36,7 +36,6 @@ contract BotInPaymentVault is IBotInPaymentVault, OwnableUpgradeable, UUPSUpgrad
         address identityRegistry_
     ) public initializer {
         __Ownable_init(initialOwner);
-        __UUPSUpgradeable_init();
         _usdt = usdt_;
         _treasury = treasury_;
         _identityRegistry = identityRegistry_;

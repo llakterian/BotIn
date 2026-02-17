@@ -28,8 +28,8 @@ interface IBotInIdentityRegistry is IERC721, IERC721Metadata {
     event SubscriptionUpdated(uint256 indexed agentId, uint256 tier, uint256 expiry);
 
     function register(string calldata agentURI, AgentMetadata[] calldata metadata) external returns (uint256 agentId);
-    function register(string calldata agentURI) external returns (uint256 agentId);
-    function register() external returns (uint256 agentId);
+    function registerWithURI(string calldata agentURI) external returns (uint256 agentId);
+    function registerMinimal() external returns (uint256 agentId);
     
     function setAgentURI(uint256 agentId, string calldata newURI) external;
     function setMetadata(uint256 agentId, string calldata metadataKey, bytes calldata metadataValue) external;

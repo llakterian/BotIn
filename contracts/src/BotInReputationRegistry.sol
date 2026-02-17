@@ -28,7 +28,6 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
 
     function initialize(address identityRegistry_) public initializer {
         __Ownable_init(msg.sender);
-        __UUPSUpgradeable_init();
         _identityRegistry = identityRegistry_;
     }
 
@@ -196,7 +195,7 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
         }
 
         if (validCount > 0) {
-            summaryValue = int128(total / int256(validCount));
+            summaryValue = int128(total / int256(uint256(validCount)));
             summaryValueDecimals = 18;
         }
         count = validCount;

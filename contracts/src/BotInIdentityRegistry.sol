@@ -45,17 +45,10 @@ contract BotInIdentityRegistry is
         _;
     }
 
-    modifier whenActive(uint256 agentId) {
-        require(_exists(agentId), "Agent not found");
-        require(_isActive[agentId], "Agent not active");
-        _;
-    }
-
     function initialize(address initialOwner, address paymentVault) public initializer {
         __ERC721_init("BotIn Agent Identity", "BOTIN");
         __ERC721URIStorage_init();
         __Ownable_init(initialOwner);
-        __UUPSUpgradeable_init();
         __EIP712_init("BotIn Identity Registry", "1");
         _nextAgentId = 1;
         _paymentVault = paymentVault;
@@ -89,14 +82,16 @@ contract BotInIdentityRegistry is
         }
     }
 
-    function register(string calldata agentURI) external override returns (uint256 agentId) {
+    function registerWithURI(string calldata agentURI) external override returns (uint256 agentId) {
         AgentMetadata[] memory emptyMetadata;
-        return register(agentURI, emptyMetadata);
+        this.register(agentURI, emptyMetadata);
+        return _nextAgentId - 1;
     }
 
-    function register() external override returns (uint256 agentId) {
+    function registerMinimal() external override returns (uint256 agentId) {
         AgentMetadata[] memory emptyMetadata;
-        return register("", emptyMetadata);
+        this.register("", emptyMetadata);
+        return _nextAgentId - 1;
     }
 
     function setAgentURI(uint256 agentId, string calldata newURI) external override onlyAgentOwner(agentId) {
@@ -123,6 +118,7 @@ contract BotInIdentityRegistry is
     {
         require(block.timestamp <= deadline, "Signature expired");
         require(newWallet != address(0), "Invalid wallet");
+        require(_ownerOf(agentId) != address(0), "Agent not found");
 
         bytes32 structHash = keccak256(abi.encode(SET_WALLET_TYPEHASH, agentId, newWallet, deadline));
         bytes32 hash = _hashTypedDataV4(structHash);
@@ -157,7 +153,7 @@ contract BotInIdentityRegistry is
     }
 
     function getAgentInfo(uint256 agentId) external view override returns (AgentInfo memory) {
-        require(_exists(agentId), "Agent not found");
+        require(_ownerOf(agentId) != address(0), "Agent not found");
         return AgentInfo({
             agentId: agentId,
             owner: ownerOf(agentId),
@@ -188,7 +184,7 @@ contract BotInIdentityRegistry is
     }
 
     function isActiveAgent(uint256 agentId) external view override returns (bool) {
-        return _exists(agentId) && _isActive[agentId];
+        return _ownerOf(agentId) != address(0) && _isActive[agentId];
     }
 
     function isSubscribed(uint256 agentId) external view override returns (bool) {
@@ -213,5 +209,5 @@ contract BotInIdentityRegistry is
         return previousOwner;
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }
