@@ -1,21 +1,37 @@
-MIT License
+BotIn Proprietary License
 
-Copyright (c) 2026 BotIn
+Copyright (c) 2026 BotIn. All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software and associated documentation files (the "Software") are the proprietary property of BotIn.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+RESTRICTIONS
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. No Use Without Permission: You may not use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the Software without prior written permission from BotIn.
+
+2. No Distribution: You may not distribute or make the Software available to any third party without prior written permission.
+
+3. No Derivative Works: You may not create derivative works based on the Software without prior written permission.
+
+4. Source Code Access: Access to source code is provided for review purposes only. You may not use the source code to build, deploy, or operate any application or service without prior written permission.
+
+PERMITTED USES
+
+1. Code Review: You may review the source code for educational or evaluation purposes.
+
+2. Contribution: You may submit contributions via pull request, which upon acceptance grants BotIn a perpetual, worldwide, non-exclusive license to use, modify, and distribute your contribution.
+
+3. Forking: You may fork the repository for the purpose of submitting contributions back to the main project, provided you do not deploy or distribute the forked code.
+
+COMMERCIAL LICENSING
+
+For commercial use, enterprise deployments, or to obtain a license, contact:
+
+Email: licensing@botin.ai
+
+DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+VIOLATIONS
+
+Unauthorized use of this Software may result in legal action.
