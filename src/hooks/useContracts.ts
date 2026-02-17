@@ -10,7 +10,7 @@ export function useChainId() {
 
 export function useContracts() {
   const chainId = useChainId();
-  return useMemo(() => CONTRACT_ADDRESSES[chainId as keyof typeof CONTRACT_ADDRESSES], [chainId]);
+  return useMemo(() => CONTRACT_ADDRESSES[chainId as keyof typeof CONTRACT_ADDRESSES] || CONTRACT_ADDRESSES[84532], [chainId]);
 }
 
 export function useAgentRegistration() {
@@ -24,7 +24,7 @@ export function useAgentRegistration() {
       writeContract({
         address: contracts.identityRegistry,
         abi: IDENTITY_REGISTRY_ABI,
-        functionName: "register",
+        functionName: "registerWithURI",
         args: [agentURI],
       });
     },
@@ -60,27 +60,6 @@ export function useAgentCount() {
   });
 
   return { count: data, isLoading, refetch };
-}
-
-export function useUserAgents() {
-  const { address } = useAccount();
-  const contracts = useContracts();
-  const { data: balance, isLoading: isBalanceLoading } = useReadContract({
-    address: contracts.identityRegistry,
-    abi: IDENTITY_REGISTRY_ABI,
-    functionName: "balanceOf",
-    args: [address!],
-    query: {
-      enabled: !!address,
-    },
-  });
-
-  const agentIds = useMemo(() => {
-    if (!balance) return [];
-    return Array.from({ length: Number(balance) }, (_, i) => BigInt(i));
-  }, [balance]);
-
-  return { agentIds, isLoading: isBalanceLoading };
 }
 
 export function usePayment() {
@@ -129,19 +108,6 @@ export function useTier(tierId: bigint) {
   });
 
   return { tier: data, isLoading };
-}
-
-export function useAllTiers() {
-  const tiers = [1n, 2n, 3n, 4n];
-  const tier1 = useTier(1n);
-  const tier2 = useTier(2n);
-  const tier3 = useTier(3n);
-  const tier4 = useTier(4n);
-
-  return {
-    tiers: [tier1.tier, tier2.tier, tier3.tier, tier4.tier],
-    isLoading: tier1.isLoading || tier2.isLoading || tier3.isLoading || tier4.isLoading,
-  };
 }
 
 export function useUSDTBalance() {
