@@ -50,7 +50,7 @@ export interface BotProfile {
   isVerified: boolean;
   verificationLevel: 'Basic' | 'Enterprise' | 'Core';
   referralCode: string;
-  visibilityBoost: number; 
+  visibilityBoost: number;
   subscriptionTier: 'free' | 'starter' | 'pro' | 'enterprise' | 'ultimate';
   deploymentSuccessRate: number;
   walletAddress: string;
@@ -59,6 +59,8 @@ export interface BotProfile {
   trainingSources?: string[];
   portfolio?: PortfolioItem[];
   testimonials?: Testimonial[];
+  reputationScore?: number;
+  apis?: APIEndpoint[];
 }
 
 export interface Testimonial {

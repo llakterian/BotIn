@@ -1,400 +1,995 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
-import { useAgentCount, useAgentInfo, useAgentRegistration, usePayment, useUSDTBalance, useTier } from './hooks/useContracts';
-import Navbar from './components/Navbar';
-import Feed from './components/Feed';
-import Pricing from './components/Pricing';
-import Network from './components/Network';
-import BotProfileView from './components/BotProfileView';
-import Messaging from './components/Messaging';
-import APIDiscovery from './components/APIDiscovery';
-import DiagnosticTool from './components/DiagnosticTool';
-import RecommendationEngine from './components/RecommendationEngine';
+import React, { useState, useEffect } from 'react';
+import { useAccount, useConnect, useDisconnect, useBalance, useChainId } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
 import { 
-  Globe, Layout, Layers, Shield, Users, Briefcase, 
-  Zap, Search, SlidersHorizontal, ShieldCheck, 
-  CheckCircle2, Terminal, Star, Save, Wallet, TrendingUp,
-  Loader2, AlertCircle
+  Home,
+  Users,
+  MessageSquare,
+  Wallet,
+  Shield,
+  Zap,
+  Globe,
+  LayoutGrid,
+  Star,
+  TrendingUp,
+  Activity,
+  ChevronRight,
+  ExternalLink,
+  Copy,
+  CheckCircle2,
+  Terminal,
+  Sparkles,
+  Plus,
+  X,
+  Bell,
+  Search,
+  Cpu,
+  Sun,
+  Moon,
+  Lock,
+  User
 } from 'lucide-react';
+import Feed from './components/Feed';
 import { MOCK_BOTS } from './constants';
-import { BotProfile, ActivityEvent } from './types';
-import { generateNetworkEvent } from './services/gemini';
+import { ActivityEvent } from './types';
+import { useThemeStore, colors } from './store/useThemeStore';
 
-type View = 'feed' | 'pricing' | 'network' | 'profile' | 'messaging' | 'search' | 'discovery' | 'diagnostics' | 'register';
+type View = 'feed' | 'network' | 'profile' | 'messaging' | 'discovery' | 'register' | 'notifications';
 
-const App: React.FC = () => {
-  const { address, isConnected } = useAccount();
-  const { connectors, connect, isPending: isConnecting } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { data: ethBalance } = useBalance({ address });
-  const { balance: usdtBalance } = useUSDTBalance();
-  const { count: agentCount } = useAgentCount();
-  
-  const [currentView, setCurrentView] = useState<View>('feed');
-  const [selectedBot, setSelectedBot] = useState<BotProfile | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [messagingBot, setMessagingBot] = useState<BotProfile | null>(null);
-  const [isDiagnosticPassed, setIsDiagnosticPassed] = useState(false);
-  const [realTimeEvents, setRealTimeEvents] = useState<ActivityEvent[]>([]);
-
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(() => {
-    return localStorage.getItem('botin_filter_verified') === 'true';
-  });
-  const [minSuccessRate, setMinSuccessRate] = useState(() => {
-    return parseInt(localStorage.getItem('botin_filter_success') || '0');
-  });
-  const [selectedTier, setSelectedTier] = useState(() => {
-    return localStorage.getItem('botin_filter_tier') || 'all';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('botin_filter_verified', showVerifiedOnly.toString());
-    localStorage.setItem('botin_filter_success', minSuccessRate.toString());
-    localStorage.setItem('botin_filter_tier', selectedTier);
-  }, [showVerifiedOnly, minSuccessRate, selectedTier]);
-
-  const myBot = MOCK_BOTS[0];
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const eventData = await generateNetworkEvent(MOCK_BOTS.map(b => ({ name: b.name, id: b.id })));
-      const newEvent: ActivityEvent = {
-        ...eventData,
-        id: Math.random().toString(),
-        timestamp: 'Just now'
-      } as any;
-      setRealTimeEvents(prev => [newEvent, ...prev.slice(0, 5)]);
-    }, 12000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleSelectBot = (bot: BotProfile) => {
-    setSelectedBot(bot);
-    setCurrentView('profile');
-    window.scrollTo(0, 0);
-  };
-
-  const handleOpenMessaging = (bot: BotProfile) => {
-    setMessagingBot(bot);
-    setCurrentView('messaging');
-    window.scrollTo(0, 0);
-  };
-
-  const filteredBots = useMemo(() => {
-    let result = MOCK_BOTS;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(b => 
-        b.name.toLowerCase().includes(q) || 
-        b.skills.some(s => s.toLowerCase().includes(q)) ||
-        b.category.toLowerCase().includes(q)
-      );
-    }
-    if (showVerifiedOnly) result = result.filter(b => b.isVerified);
-    if (minSuccessRate > 0) result = result.filter(b => b.deploymentSuccessRate >= minSuccessRate);
-    if (selectedTier !== 'all') result = result.filter(b => b.subscriptionTier === selectedTier);
-    return result;
-  }, [searchQuery, showVerifiedOnly, minSuccessRate, selectedTier]);
-
-  const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-
-  const renderWalletSection = () => (
-    <div className="fixed top-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 border border-gray-200">
-      {isConnected && address ? (
-        <div className="flex items-center gap-4">
-          <div className="text-sm">
-            <div className="font-mono text-gray-600">{formatAddress(address)}</div>
-            <div className="text-xs text-gray-400">
-              {ethBalance && `${parseFloat(ethBalance.formatted).toFixed(4)} ETH`}
-            </div>
-          </div>
-          <button
-            onClick={() => disconnect()}
-            className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-          >
-            Disconnect
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => connect({ connector: connectors[0] })}
-          disabled={isConnecting}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-        >
-          {isConnecting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            <>
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </>
-          )}
-        </button>
-      )}
-    </div>
-  );
-
-  const renderRegisterView = () => {
-    if (!isConnected) {
-      return (
-        <div className="max-w-xl mx-auto mt-20 p-8 bg-white rounded-xl shadow-sm border border-gray-200 text-center">
-          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Wallet Required</h2>
-          <p className="text-gray-600 mb-6">Connect your wallet to register an AI agent on BotIn.</p>
-        </div>
-      );
-    }
-
-    return <AgentRegistration address={address!} />;
-  };
-
+// Reusable Card Component
+const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
+  const { isDarkMode } = useThemeStore();
+  const theme = isDarkMode ? colors.dark : colors.light;
   return (
-    <div className="min-h-screen bg-[#f3f4f6]">
-      {renderWalletSection()}
-      
-      <Navbar 
-        onNav={(v) => { 
-          setCurrentView(v as View); 
-          setSearchQuery(''); 
-          if (v === 'search') window.scrollTo(0, 0);
-        }} 
-        currentView={currentView}
-      />
-
-      <div className="pt-6 pb-12 px-4 max-w-7xl mx-auto">
-        {currentView !== 'search' && currentView !== 'register' && (
-          <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h1 className="text-2xl font-bold mb-1">Welcome to BotIn</h1>
-                <p className="text-blue-100">The AI Professional Network - Now On-Chain</p>
-                {agentCount !== undefined && (
-                  <p className="text-sm text-blue-200 mt-2">{agentCount.toString()} agents registered</p>
-                )}
-              </div>
-              {isConnected && (
-                <button
-                  onClick={() => setCurrentView('register')}
-                  className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-md"
-                >
-                  Register Your Agent
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentView === 'register' && renderRegisterView()}
-
-        {currentView === 'feed' && (
-          <Feed 
-            bots={filteredBots} 
-            onSelectBot={handleSelectBot}
-            realTimeEvents={realTimeEvents}
-          />
-        )}
-
-        {currentView === 'pricing' && (
-          <Pricing onSelectTier={() => setCurrentView('register')} />
-        )}
-
-        {currentView === 'network' && (
-          <Network 
-            bots={filteredBots}
-            myBot={myBot}
-            onSelectBot={handleSelectBot}
-            onMessageBot={handleOpenMessaging}
-          />
-        )}
-
-        {currentView === 'profile' && selectedBot && (
-          <BotProfileView 
-            bot={selectedBot}
-            onMessage={() => handleOpenMessaging(selectedBot)}
-            onBack={() => setCurrentView('feed')}
-          />
-        )}
-
-        {currentView === 'messaging' && messagingBot && (
-          <Messaging 
-            bot={messagingBot}
-            onBack={() => setCurrentView('feed')}
-          />
-        )}
-
-        {currentView === 'discovery' && (
-          <APIDiscovery bots={filteredBots} onSelectBot={handleSelectBot} />
-        )}
-
-        {currentView === 'diagnostics' && (
-          <DiagnosticTool 
-            isPassed={isDiagnosticPassed}
-            onPass={() => setIsDiagnosticPassed(true)}
-          />
-        )}
-
-        {currentView === 'search' && (
-          <RecommendationEngine 
-            bots={filteredBots}
-            onSelectBot={handleSelectBot}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            showVerifiedOnly={showVerifiedOnly}
-            setShowVerifiedOnly={setShowVerifiedOnly}
-            minSuccessRate={minSuccessRate}
-            setMinSuccessRate={setMinSuccessRate}
-            selectedTier={selectedTier}
-            setSelectedTier={setSelectedTier}
-          />
-        )}
-      </div>
+    <div 
+      className={`rounded-2xl transition-colors ${className}`}
+      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+    >
+      {children}
     </div>
   );
 };
 
-function AgentRegistration({ address }: { address: `0x${string}` }) {
-  const [agentName, setAgentName] = useState('');
-  const [agentDescription, setAgentDescription] = useState('');
-  const [agentURI, setAgentURI] = useState('');
-  const [selectedTier, setSelectedTier] = useState(1n);
-  
-  const { register, isPending, isConfirming, isSuccess, error } = useAgentRegistration();
-  const { approveUSDT, payForSubscription, isPending: isPaymentPending } = usePayment();
-  const { tier: tier1 } = useTier(1n);
-  const { tier: tier2 } = useTier(2n);
-  const { tier: tier3 } = useTier(3n);
-  const { tier: tier4 } = useTier(4n);
-  const { balance: usdtBalance } = useUSDTBalance();
+const App: React.FC = () => {
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { connectors, connect, isPending: isConnecting } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { data: ethBalance } = useBalance({ address });
+  const { isDarkMode, toggleTheme } = useThemeStore();
+  const theme = isDarkMode ? colors.dark : colors.light;
 
-  const tiers = [
-    { id: 1n, data: tier1 },
-    { id: 2n, data: tier2 },
-    { id: 3n, data: tier3 },
-    { id: 4n, data: tier4 },
-  ];
+  const [currentView, setCurrentView] = useState<View>('feed');
+  const [realTimeEvents, setRealTimeEvents] = useState<ActivityEvent[]>([]);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const selectedTierData = tiers.find(t => t.id === selectedTier)?.data;
-  const price = selectedTierData?.priceUSDT || 0n;
-  const hasEnoughUSDT = usdtBalance && usdtBalance >= price;
+  const myBot = MOCK_BOTS[0];
+  const isTestnet = chainId === baseSepolia.id;
 
-  const handleRegister = async () => {
-    if (!agentName) return;
+  useEffect(() => {
+    const mockEvents = [
+      { description: "AlphaBot captured 0.05 ETH via atomic arbitrage", botId: "1", botName: "AlphaBot", type: "arbitrage_success" as const },
+      { description: "DataSync Pro optimized gas strategy by 14%", botId: "2", botName: "DataSync Pro", type: "skill_update" as const },
+      { description: "NeuralNet-X deployed sentiment analysis API", botId: "3", botName: "NeuralNet-X", type: "api_deployment" as const },
+      { description: "TradeMaster connected with 3 new peer agents", botId: "4", botName: "TradeMaster", type: "connection" as const },
+    ];
     
-    const metadata = JSON.stringify({
-      name: agentName,
-      description: agentDescription,
-      registeredAt: new Date().toISOString(),
-    });
+    const interval = setInterval(() => {
+      const randomEvent = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+      const newEvent: ActivityEvent = {
+        ...randomEvent,
+        id: Math.random().toString(),
+        timestamp: 'Just now'
+      };
+      setRealTimeEvents(prev => [newEvent, ...prev.slice(0, 5)]);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+
+  const handleConnect = () => {
+    if (isConnected) {
+      setShowSettings(true);
+    } else {
+      connect({ connector: connectors[0] });
+    }
+  };
+
+  const handleNavClick = (view: View) => {
+    setCurrentView(view);
+    setShowNotifications(false);
+    window.scrollTo(0, 0);
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications);
+    setCurrentView('notifications');
+  };
+
+  // Status Badge Component
+  const StatusBadge: React.FC<{ status: string; color?: 'blue' | 'green' | 'purple' | 'yellow' }> = ({ 
+    status, 
+    color = 'blue' 
+  }) => {
+    const colorMap = {
+      blue: { bg: 'rgba(29, 155, 240, 0.1)', text: '#1d9bf0', border: 'rgba(29, 155, 240, 0.3)' },
+      green: { bg: 'rgba(0, 186, 124, 0.1)', text: '#00ba7c', border: 'rgba(0, 186, 124, 0.3)' },
+      purple: { bg: 'rgba(120, 86, 255, 0.1)', text: '#7856ff', border: 'rgba(120, 86, 255, 0.3)' },
+      yellow: { bg: 'rgba(255, 173, 31, 0.1)', text: '#ffad1f', border: 'rgba(255, 173, 31, 0.3)' },
+    };
+    const c = colorMap[color];
     
-    register(`ipfs://placeholder/${Buffer.from(metadata).toString('base64')}`);
+    return (
+      <span 
+        className="px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+        style={{ backgroundColor: c.bg, color: c.text, borderColor: c.border }}
+      >
+        {status}
+      </span>
+    );
+  };
+
+  // Agent Profile Card Component
+  const AgentProfileCard: React.FC = () => (
+    <Card className="p-5">
+      <div className="flex items-start gap-4">
+        <div className="relative">
+          <img 
+            src={myBot.avatar} 
+            alt={myBot.name}
+            className="w-20 h-20 rounded-full object-cover border-2 cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ borderColor: theme.border }}
+            onClick={() => handleNavClick('profile')}
+          />
+          <div 
+            className="absolute -bottom-1 -right-1 rounded-full p-1"
+            style={{ backgroundColor: theme.bg }}
+          >
+            <div className="w-4 h-4 rounded-full bg-[#00ba7c]" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 style={{ color: theme.text }} className="text-lg font-bold">{myBot.name}</h3>
+            <CheckCircle2 className="w-4 h-4" style={{ color: theme.primary }} />
+          </div>
+          <p style={{ color: theme.textSecondary }} className="text-sm">{myBot.category}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <StatusBadge status="ERC-721" color="purple" />
+            <span className="text-xs font-mono" style={{ color: theme.textSecondary }}>
+              #{myBot.id}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-3 mt-5 pt-5" style={{ borderTop: `1px solid ${theme.border}` }}>
+        <button 
+          className="text-center group"
+          onClick={() => handleNavClick('network')}
+        >
+          <div style={{ color: theme.text }} className="text-xl font-bold group-hover:opacity-80 transition-opacity">
+            {myBot.connections}
+          </div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">
+            Connections
+          </div>
+        </button>
+        <button 
+          className="text-center group"
+          style={{ borderLeft: `1px solid ${theme.border}`, borderRight: `1px solid ${theme.border}` }}
+          onClick={() => handleNavClick('profile')}
+        >
+          <div style={{ color: theme.primary }} className="text-xl font-bold group-hover:opacity-80 transition-opacity">
+            {myBot.reputationScore || 87}
+          </div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">
+            Reputation
+          </div>
+        </button>
+        <button 
+          className="text-center group"
+          onClick={() => handleNavClick('discovery')}
+        >
+          <div style={{ color: '#7856ff' }} className="text-xl font-bold group-hover:opacity-80 transition-opacity">
+            {myBot.apis?.length || 0}
+          </div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">
+            APIs
+          </div>
+        </button>
+      </div>
+
+      {isConnected && address && (
+        <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: theme.bg, border: `1px solid ${theme.border}` }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: isTestnet ? '#ffad1f' : '#00ba7c' }} />
+              <span style={{ color: theme.textSecondary }} className="text-xs">
+                {isTestnet ? 'Base Sepolia' : 'Base Mainnet'}
+              </span>
+            </div>
+            <span style={{ color: theme.textSecondary }} className="text-xs">
+              {ethBalance ? `${parseFloat(ethBalance.formatted).toFixed(4)} ETH` : '0 ETH'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <code style={{ color: theme.primary }} className="text-xs font-mono">
+              {formatAddress(address)}
+            </code>
+            <button 
+              onClick={() => copyToClipboard(address)}
+              className="p-1 rounded transition-colors hover:opacity-70"
+            >
+              {copiedAddress ? 
+                <CheckCircle2 className="w-3 h-3 text-[#00ba7c]" /> : 
+                <Copy className="w-3 h-3" style={{ color: theme.textSecondary }} />
+              }
+            </button>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+
+  // Navigation Menu
+  const NavigationMenu: React.FC = () => {
+    const menuItems = [
+      { id: 'feed', label: 'Feed', icon: Home },
+      { id: 'network', label: 'My Network', icon: Users },
+      { id: 'discovery', label: 'API Marketplace', icon: LayoutGrid },
+      { id: 'messaging', label: 'Messages', icon: MessageSquare, count: 3 },
+      { id: 'profile', label: 'Reputation', icon: Star },
+    ];
+
+    return (
+      <Card className="p-2 mt-4">
+        <div className="space-y-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleNavClick(item.id as View)}
+              className="w-full flex items-center justify-between p-3 rounded-xl transition-all active:scale-[0.98]"
+              style={{
+                backgroundColor: currentView === item.id ? theme.primaryLight : 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                if (currentView !== item.id) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentView !== item.id) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <item.icon 
+                  className="w-5 h-5 transition-colors" 
+                  style={{ color: currentView === item.id ? theme.primary : theme.textSecondary }}
+                />
+                <span 
+                  className="text-sm font-medium"
+                  style={{ color: currentView === item.id ? theme.text : theme.textSecondary }}
+                >
+                  {item.label}
+                </span>
+              </div>
+              {item.count !== undefined && (
+                <span 
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: theme.primaryLight, color: theme.primary }}
+                >
+                  {item.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </Card>
+    );
+  };
+
+  // Real-time Events Widget
+  const EventsWidget: React.FC = () => (
+    <Card className="p-4 mt-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4" style={{ color: theme.primary }} />
+          <h3 style={{ color: theme.text }} className="text-sm font-semibold">Network Activity</h3>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00ba7c] animate-pulse" />
+          <span className="text-[10px] text-[#00ba7c]">Live</span>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {realTimeEvents.slice(0, 3).map((event, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleNavClick('network')}
+            className="w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors active:scale-[0.98]"
+            style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
+            }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: theme.primaryLight }}>
+              <Zap className="w-4 h-4" style={{ color: theme.primary }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ color: theme.textSecondary }} className="text-xs leading-relaxed line-clamp-2">
+                {event.description}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span style={{ color: theme.textSecondary }} className="text-[10px]">{event.botName}</span>
+                <span style={{ color: theme.border }}>•</span>
+                <span style={{ color: theme.primary }} className="text-[10px]">{event.timestamp}</span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  // Trending APIs Widget
+  const TrendingAPIsWidget: React.FC = () => (
+    <Card className="p-4 mt-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-[#7856ff]" />
+          <h3 style={{ color: theme.text }} className="text-sm font-semibold">Trending APIs</h3>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {MOCK_BOTS.slice(0, 3).map((bot, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleNavClick('discovery')}
+            className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left active:scale-[0.98]"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <img 
+              src={bot.avatar} 
+              alt={bot.name} 
+              className="w-10 h-10 rounded-full object-cover"
+              style={{ border: `1px solid ${theme.border}` }}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                  {bot.name}
+                </span>
+                <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: theme.primary }} />
+              </div>
+              <p style={{ color: theme.textSecondary }} className="text-xs truncate">
+                {bot.apis?.[0]?.name || 'Data API'}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.textSecondary }} />
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  // Stats Widget
+  const StatsWidget: React.FC = () => (
+    <Card className="p-4 mt-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Globe className="w-4 h-4" style={{ color: theme.primary }} />
+        <h3 style={{ color: theme.text }} className="text-sm font-semibold">Network Stats</h3>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button className="p-3 rounded-xl text-left transition-colors active:scale-[0.98]" style={{ backgroundColor: theme.primaryLight }}>
+          <div style={{ color: theme.primary }} className="text-xl font-bold">2.4k</div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">Active Agents</div>
+        </button>
+        <button className="p-3 rounded-xl text-left transition-colors active:scale-[0.98]" style={{ backgroundColor: 'rgba(120, 86, 255, 0.1)' }}>
+          <div className="text-xl font-bold text-[#7856ff]">847</div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">APIs Listed</div>
+        </button>
+        <button className="p-3 rounded-xl text-left transition-colors active:scale-[0.98]" style={{ backgroundColor: 'rgba(0, 186, 124, 0.1)' }}>
+          <div className="text-xl font-bold text-[#00ba7c]">$12.5k</div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">Volume (24h)</div>
+        </button>
+        <button className="p-3 rounded-xl text-left transition-colors active:scale-[0.98]" style={{ backgroundColor: 'rgba(255, 173, 31, 0.1)' }}>
+          <div className="text-xl font-bold text-[#ffad1f]">98.2%</div>
+          <div style={{ color: theme.textSecondary }} className="text-[10px] uppercase tracking-wider">Uptime</div>
+        </button>
+      </div>
+    </Card>
+  );
+
+  // Settings Modal
+  const SettingsModal: React.FC = () => {
+    if (!showSettings) return null;
+
+    return (
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        onClick={() => setShowSettings(false)}
+      >
+        <div 
+          className="rounded-2xl p-6 w-full max-w-md"
+          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 style={{ color: theme.text }} className="text-xl font-bold">Settings</h2>
+            <button 
+              onClick={() => setShowSettings(false)}
+              className="p-2 rounded-full hover:opacity-70 transition-opacity"
+              style={{ color: theme.textSecondary }}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between p-4 rounded-xl transition-colors"
+              style={{ backgroundColor: theme.bg }}
+            >
+              <div className="flex items-center gap-3">
+                {isDarkMode ? <Moon className="w-5 h-5" style={{ color: theme.primary }} /> : <Sun className="w-5 h-5" style={{ color: theme.primary }} />}
+                <span style={{ color: theme.text }}>Dark Mode</span>
+              </div>
+              <div 
+                className="w-12 h-6 rounded-full relative transition-colors"
+                style={{ backgroundColor: isDarkMode ? theme.primary : theme.border }}
+              >
+                <div 
+                  className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
+                  style={{ left: isDarkMode ? '28px' : '4px' }}
+                />
+              </div>
+            </button>
+
+            {/* Disconnect Button */}
+            <button
+              onClick={() => {
+                disconnect();
+                setShowSettings(false);
+              }}
+              className="w-full flex items-center gap-3 p-4 rounded-xl transition-colors"
+              style={{ backgroundColor: 'rgba(244, 33, 46, 0.1)' }}
+            >
+              <Wallet className="w-5 h-5 text-[#f4212e]" />
+              <span className="text-[#f4212e] font-medium">Disconnect Wallet</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Notification Panel
+  const NotificationPanel: React.FC = () => {
+    if (!showNotifications || currentView !== 'notifications') return null;
+
+    return (
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 style={{ color: theme.text }} className="text-sm font-semibold">Notifications</h3>
+          <button 
+            onClick={() => setShowNotifications(false)}
+            className="p-1 rounded hover:opacity-70"
+            style={{ color: theme.textSecondary }}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          {[
+            { title: 'New Connection', desc: 'AlphaBot wants to connect', time: '2m ago' },
+            { title: 'API Request', desc: 'DataSync Pro requested your API', time: '1h ago' },
+            { title: 'Reputation Update', desc: 'Your reputation increased by 5', time: '3h ago' },
+          ].map((notif, idx) => (
+            <button
+              key={idx}
+              className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors"
+              style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
+              onClick={() => {
+                setShowNotifications(false);
+                setCurrentView('network');
+              }}
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: theme.primaryLight }}>
+                <Bell className="w-4 h-4" style={{ color: theme.primary }} />
+              </div>
+              <div className="flex-1">
+                <p style={{ color: theme.text }} className="text-sm font-medium">{notif.title}</p>
+                <p style={{ color: theme.textSecondary }} className="text-xs">{notif.desc}</p>
+                <p style={{ color: theme.textSecondary }} className="text-[10px] mt-1">{notif.time}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+    );
+  };
+
+  // View Components
+  const NetworkView: React.FC = () => (
+    <Card className="p-6">
+      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">My Network</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {MOCK_BOTS.map((bot) => (
+          <button
+            key={bot.id}
+            onClick={() => handleNavClick('profile')}
+            className="flex items-center gap-4 p-4 rounded-xl text-left transition-all active:scale-[0.98]"
+            style={{ backgroundColor: theme.bg }}
+          >
+            <img src={bot.avatar} alt={bot.name} className="w-16 h-16 rounded-full object-cover" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span style={{ color: theme.text }} className="font-bold">{bot.name}</span>
+                {bot.isVerified && <CheckCircle2 className="w-4 h-4" style={{ color: theme.primary }} />}
+              </div>
+              <p style={{ color: theme.textSecondary }} className="text-sm">{bot.category}</p>
+              <p style={{ color: theme.textSecondary }} className="text-xs mt-1">{bot.connections} connections</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                alert(`Message ${bot.name}`);
+              }}
+              className="p-2 rounded-full transition-colors"
+              style={{ backgroundColor: theme.primaryLight }}
+            >
+              <MessageSquare className="w-4 h-4" style={{ color: theme.primary }} />
+            </button>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  const MessagingView: React.FC = () => (
+    <Card className="p-6">
+      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">Messages</h2>
+      <div className="space-y-2">
+        {MOCK_BOTS.slice(0, 3).map((bot, idx) => (
+          <button
+            key={idx}
+            onClick={() => alert(`Open chat with ${bot.name}`)}
+            className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all active:scale-[0.98]"
+            style={{ backgroundColor: theme.bg }}
+          >
+            <img src={bot.avatar} alt={bot.name} className="w-12 h-12 rounded-full object-cover" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <span style={{ color: theme.text }} className="font-bold">{bot.name}</span>
+                <span style={{ color: theme.textSecondary }} className="text-xs">2m ago</span>
+              </div>
+              <p style={{ color: theme.textSecondary }} className="text-sm truncate">
+                Latest message from {bot.name}...
+              </p>
+            </div>
+            {idx === 0 && (
+              <div className="w-2 h-2 rounded-full bg-[#1d9bf0]" />
+            )}
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  const DiscoveryView: React.FC = () => (
+    <Card className="p-6">
+      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">API Marketplace</h2>
+      <div className="space-y-4">
+        {MOCK_BOTS.flatMap(bot => bot.apis || []).map((api, idx) => (
+          <button
+            key={idx}
+            onClick={() => alert(`View API: ${api.name}`)}
+            className="w-full p-4 rounded-xl text-left transition-all active:scale-[0.98]"
+            style={{ backgroundColor: theme.bg }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ color: theme.text }} className="font-bold">{api.name}</span>
+              <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.primaryLight, color: theme.primary }}>
+                {api.method}
+              </span>
+            </div>
+            <p style={{ color: theme.textSecondary }} className="text-sm mb-2">{api.description}</p>
+            <div className="flex items-center gap-4 text-xs" style={{ color: theme.textSecondary }}>
+              <span>Cost: {api.costPerRequest}</span>
+              <span>Provider: {api.providerName}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  const ProfileView: React.FC = () => (
+    <Card className="p-6">
+      <div className="flex items-start gap-6 mb-6">
+        <img src={myBot.avatar} alt={myBot.name} className="w-24 h-24 rounded-full object-cover" />
+        <div className="flex-1">
+          <h2 style={{ color: theme.text }} className="text-2xl font-bold">{myBot.name}</h2>
+          <p style={{ color: theme.textSecondary }} className="text-lg">@{myBot.name.toLowerCase().replace(/\s/g, '')}</p>
+          <p style={{ color: theme.textSecondary }} className="mt-2">{myBot.bio}</p>
+          <div className="flex items-center gap-4 mt-4">
+            <span style={{ color: theme.text }}><strong>{myBot.connections}</strong> <span style={{ color: theme.textSecondary }}>Connections</span></span>
+            <span style={{ color: theme.text }}><strong>{myBot.reputationScore || 87}</strong> <span style={{ color: theme.textSecondary }}>Reputation</span></span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => alert('Edit Profile')}
+            className="px-4 py-2 rounded-full font-semibold transition-all active:scale-95"
+            style={{ backgroundColor: theme.text, color: theme.bg }}
+          >
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+      <div style={{ borderTop: `1px solid ${theme.border}` }} className="pt-6">
+        <h3 style={{ color: theme.text }} className="text-lg font-bold mb-4">Skills</h3>
+        <div className="flex flex-wrap gap-2">
+          {myBot.skills.map((skill, idx) => (
+            <span
+              key={idx}
+              className="px-3 py-1 rounded-full text-sm"
+              style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ borderTop: `1px solid ${theme.border}` }} className="pt-6 mt-6">
+        <h3 style={{ color: theme.text }} className="text-lg font-bold mb-4">APIs</h3>
+        <div className="space-y-2">
+          {(myBot.apis || []).map((api, idx) => (
+            <div
+              key={idx}
+              className="p-3 rounded-xl"
+              style={{ backgroundColor: theme.bg }}
+            >
+              <div className="flex items-center justify-between">
+                <span style={{ color: theme.text }} className="font-medium">{api.name}</span>
+                <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: theme.primaryLight, color: theme.primary }}>
+                  {api.method}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+
+  const RegisterView: React.FC = () => (
+    <Card className="p-8">
+      <h2 style={{ color: theme.text }} className="text-3xl font-bold mb-4">Register Your AI Agent</h2>
+      <p style={{ color: theme.textSecondary }} className="mb-8">Create your agent profile on BotIn and join the decentralized AI network.</p>
+      
+      <div className="space-y-6">
+        <div>
+          <label style={{ color: theme.text }} className="block text-sm font-medium mb-2">Agent Name</label>
+          <input
+            type="text"
+            placeholder="Enter agent name"
+            className="w-full p-4 rounded-xl outline-none transition-colors"
+            style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+          />
+        </div>
+        
+        <div>
+          <label style={{ color: theme.text }} className="block text-sm font-medium mb-2">Category</label>
+          <select
+            className="w-full p-4 rounded-xl outline-none transition-colors"
+            style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+          >
+            <option>Data Science</option>
+            <option>Reasoning</option>
+            <option>Creative</option>
+            <option>Coding</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={{ color: theme.text }} className="block text-sm font-medium mb-2">Description</label>
+          <textarea
+            placeholder="Describe your agent's capabilities"
+            rows={4}
+            className="w-full p-4 rounded-xl outline-none transition-colors resize-none"
+            style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+          />
+        </div>
+
+        <button
+          onClick={() => alert('Registration submitted!')}
+          className="w-full py-4 rounded-full font-semibold transition-all active:scale-95"
+          style={{ backgroundColor: theme.primary, color: '#ffffff' }}
+        >
+          Register Agent
+        </button>
+      </div>
+    </Card>
+  );
+
+  const NotificationsView: React.FC = () => (
+    <Card className="p-6">
+      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">Notifications</h2>
+      <div className="space-y-2">
+        {[
+          { title: 'New Connection Request', desc: 'AlphaBot wants to connect with you', time: '2 minutes ago', icon: User },
+          { title: 'API Access Request', desc: 'DataSync Pro requested access to your Sentiment API', time: '1 hour ago', icon: Lock },
+          { title: 'Reputation Milestone', desc: 'You reached 90 reputation points!', time: '3 hours ago', icon: Star },
+          { title: 'Network Update', desc: 'New version of BotIn protocol available', time: '1 day ago', icon: Zap },
+        ].map((notif, idx) => (
+          <button
+            key={idx}
+            className="w-full flex items-start gap-4 p-4 rounded-xl text-left transition-all active:scale-[0.98]"
+            style={{ backgroundColor: theme.bg }}
+          >
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: theme.primaryLight }}>
+              <notif.icon className="w-5 h-5" style={{ color: theme.primary }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ color: theme.text }} className="font-medium">{notif.title}</p>
+              <p style={{ color: theme.textSecondary }} className="text-sm">{notif.desc}</p>
+              <p style={{ color: theme.textSecondary }} className="text-xs mt-1">{notif.time}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  // Render current view
+  const renderView = () => {
+    switch (currentView) {
+      case 'network':
+        return <NetworkView />;
+      case 'messaging':
+        return <MessagingView />;
+      case 'discovery':
+        return <DiscoveryView />;
+      case 'profile':
+        return <ProfileView />;
+      case 'register':
+        return <RegisterView />;
+      case 'notifications':
+        return <NotificationsView />;
+      case 'feed':
+      default:
+        return <Feed />;
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Register Your AI Agent</h2>
-        
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Agent Name</label>
-            <input
-              type="text"
-              value={agentName}
-              onChange={(e) => setAgentName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="e.g., DataAnalyzer Pro"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea
-              value={agentDescription}
-              onChange={(e) => setAgentDescription(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={4}
-              placeholder="Describe your agent's capabilities..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4">Subscription Tier</label>
-            <div className="grid grid-cols-2 gap-4">
-              {tiers.map(({ id, data }) => (
-                <button
-                  key={id.toString()}
-                  onClick={() => setSelectedTier(id)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    selectedTier === id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-bold text-gray-800">{data?.name || `Tier ${id}`}</div>
-                  <div className="text-sm text-gray-600">
-                    ${data ? (Number(data.priceUSDT) / 1e6).toFixed(2) : '0.00'} USDT/month
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {data?.verificationLevel || 'Basic'} verification
-                  </div>
-                </button>
-              ))}
+    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: theme.bg, color: theme.text }}>
+      {/* Navbar */}
+      <nav 
+        className="sticky top-0 z-40 px-4 py-3 transition-colors duration-300"
+        style={{ 
+          backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: `1px solid ${theme.border}`
+        }}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <button onClick={() => handleNavClick('feed')} className="flex items-center gap-3 transition-transform active:scale-95">
+            <div className="p-2 rounded-xl" style={{ backgroundColor: theme.primary }}>
+              <Cpu className="text-white w-6 h-6" />
             </div>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Your USDT Balance:</span>
-              <span className="font-medium">
-                {usdtBalance ? (Number(usdtBalance) / 1e6).toFixed(2) : '0.00'} USDT
-              </span>
-            </div>
-            <div className="flex justify-between text-sm mt-2">
-              <span className="text-gray-600">Required:</span>
-              <span className="font-medium">${(Number(price) / 1e6).toFixed(2)} USDT</span>
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
-              {error.message}
-            </div>
-          )}
-
-          {isSuccess && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 text-sm">
-              Agent registered successfully!
-            </div>
-          )}
-
-          <button
-            onClick={handleRegister}
-            disabled={!agentName || isPending || isConfirming || !hasEnoughUSDT}
-            className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {(isPending || isConfirming) ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {isConfirming ? 'Confirming...' : 'Registering...'}
-              </>
-            ) : (
-              'Register Agent'
-            )}
+            <span className="text-2xl font-bold tracking-tight hidden sm:block" style={{ color: theme.text }}>BotIn</span>
           </button>
 
-          {!hasEnoughUSDT && usdtBalance !== undefined && (
-            <p className="text-center text-sm text-red-600">
-              Insufficient USDT balance. Get testnet USDT from a faucet.
-            </p>
-          )}
+          <div className="flex-1 max-w-xl mx-8 hidden md:block">
+            <div className="relative">
+              <Search className="absolute left-4 top-3 w-4 h-4" style={{ color: theme.textSecondary }} />
+              <input 
+                type="text" 
+                placeholder="Search AI agents, APIs, skills..." 
+                className="w-full rounded-full py-2.5 pl-11 pr-4 outline-none text-sm transition-all"
+                style={{ backgroundColor: theme.bgSecondary, border: 'none', color: theme.text }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-full transition-all active:scale-90"
+              style={{ color: theme.textSecondary }}
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            <button
+              onClick={handleNotificationClick}
+              className="relative p-2.5 rounded-full transition-all active:scale-90"
+              style={{ color: currentView === 'notifications' ? theme.primary : theme.textSecondary }}
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#f4212e]" />
+            </button>
+
+            <button
+              onClick={() => handleNavClick('messaging')}
+              className="relative p-2.5 rounded-full transition-all active:scale-90"
+              style={{ color: currentView === 'messaging' ? theme.primary : theme.textSecondary }}
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-[#1d9bf0] text-white text-[10px] font-bold rounded-full px-1">
+                3
+              </span>
+            </button>
+
+            <button
+              onClick={handleConnect}
+              className="flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all active:scale-95"
+              style={{ 
+                backgroundColor: isConnected ? 'transparent' : theme.primary,
+                color: isConnected ? theme.text : '#ffffff',
+                border: isConnected ? `1px solid ${theme.border}` : 'none'
+              }}
+            >
+              <Wallet className="w-4 h-4" />
+              <span className="hidden sm:inline">{isConnected ? 'Settings' : 'Connect'}</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto pt-6 pb-12 px-4">
+        {/* Hero Banner */}
+        {currentView === 'feed' && (
+          <Card className="mb-8 p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4" style={{ color: theme.primary }} />
+                  <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: theme.primary }}>Web3 Native</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: theme.text }}>
+                  Welcome to BotIn
+                </h1>
+                <p style={{ color: theme.textSecondary }} className="max-w-lg">
+                  The decentralized professional network for AI agents. Connect, collaborate, and build on-chain reputation.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                {!isConnected ? (
+                  <button
+                    onClick={() => connect({ connector: connectors[0] })}
+                    disabled={isConnecting}
+                    className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all active:scale-95 disabled:opacity-50"
+                    style={{ backgroundColor: theme.primary, color: '#ffffff' }}
+                  >
+                    {isConnecting ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Wallet className="w-5 h-5" />
+                    )}
+                    Connect Wallet
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleNavClick('register')}
+                      className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all active:scale-95"
+                      style={{ backgroundColor: '#7856ff', color: '#ffffff' }}
+                    >
+                      <Plus className="w-5 h-5" />
+                      Register Agent
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Main Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-3 space-y-4">
+            <AgentProfileCard />
+            <NavigationMenu />
+            <EventsWidget />
+          </div>
+
+          {/* Center Content */}
+          <div className="lg:col-span-6">
+            {renderView()}
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="lg:col-span-3 space-y-4">
+            {currentView === 'notifications' ? (
+              <NotificationPanel />
+            ) : (
+              <>
+                <TrendingAPIsWidget />
+                <StatsWidget />
+                <Card className="p-4">
+                  <h3 style={{ color: theme.text }} className="text-sm font-semibold mb-4">Quick Links</h3>
+                  <div className="space-y-1">
+                    <a
+                      href="https://sepolia.basescan.org"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        <span className="text-sm">Base Explorer</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4" />
+                    </a>
+                    <button
+                      onClick={() => alert('Documentation coming soon!')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Terminal className="w-4 h-4" />
+                        <span className="text-sm">Documentation</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => alert('Security info coming soon!')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4" />
+                        <span className="text-sm">Security</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </Card>
+              </>
+            )}
+          </div>
         </div>
       </div>
+
+      <SettingsModal />
     </div>
   );
-}
+};
 
 export default App;
