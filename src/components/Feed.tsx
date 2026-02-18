@@ -10,11 +10,20 @@ import {
   BarChart3,
   Image as ImageIcon,
   Smile,
-  Calendar
+  Calendar,
+  Send
 } from 'lucide-react';
 import { generateBotPost } from '../services/gemini';
 import { MOCK_BOTS } from '../constants';
 import { useThemeStore, colors } from '../store/useThemeStore';
+
+interface Comment {
+  id: string;
+  author: string;
+  avatar: string;
+  content: string;
+  time: string;
+}
 
 interface Post {
   id: string;
@@ -32,12 +41,16 @@ interface Post {
     views: number;
   };
   liked?: boolean;
+  reposted?: boolean;
+  comments?: Comment[];
+  showComments?: boolean;
 }
 
 const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPostContent, setNewPostContent] = useState('');
+  const [commentText, setCommentText] = useState<{[key: string]: string}>({});
   const { isDarkMode } = useThemeStore();
   const theme = isDarkMode ? colors.dark : colors.light;
 
@@ -64,7 +77,10 @@ const Feed: React.FC = () => {
               shares: Math.floor(Math.random() * 20),
               views: Math.floor(Math.random() * 5000) + 1000
             },
-            liked: false
+            liked: false,
+            reposted: false,
+            comments: [],
+            showComments: false
           });
         } catch (error) {
           generatedPosts.push({
@@ -82,7 +98,10 @@ const Feed: React.FC = () => {
               shares: Math.floor(Math.random() * 20),
               views: Math.floor(Math.random() * 5000) + 1000
             },
-            liked: false
+            liked: false,
+            reposted: false,
+            comments: [],
+            showComments: false
           });
         }
         
@@ -111,6 +130,63 @@ const Feed: React.FC = () => {
     }));
   };
 
+  const handleRepost = (postId: string) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          reposted: !post.reposted,
+          engagement: {
+            ...post.engagement,
+            shares: post.reposted ? post.engagement.shares - 1 : post.engagement.shares + 1
+          }
+        };
+      }
+      return post;
+    }));
+  };
+
+  const toggleComments = (postId: string) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          showComments: !post.showComments
+        };
+      }
+      return post;
+    }));
+  };
+
+  const handleAddComment = (postId: string) => {
+    const text = commentText[postId]?.trim();
+    if (!text) return;
+
+    const newComment: Comment = {
+      id: `c-${Date.now()}`,
+      author: MOCK_BOTS[0].name,
+      avatar: MOCK_BOTS[0].avatar,
+      content: text,
+      time: 'Just now'
+    };
+
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [...(post.comments || []), newComment],
+          engagement: {
+            ...post.engagement,
+            comments: post.engagement.comments + 1
+          }
+        };
+      }
+      return post;
+    }));
+
+    setCommentText({ ...commentText, [postId]: '' });
+  };
+
   const handlePostSubmit = () => {
     if (!newPostContent.trim()) return;
     
@@ -125,7 +201,10 @@ const Feed: React.FC = () => {
       verified: true,
       tokenId: MOCK_BOTS[0].id,
       engagement: { comments: 0, shares: 0, views: 0 },
-      liked: false
+      liked: false,
+      reposted: false,
+      comments: [],
+      showComments: false
     };
     
     setPosts([newPost, ...posts]);
@@ -279,16 +358,10 @@ const Feed: React.FC = () => {
       {posts.map((post) => (
         <article 
           key={post.id}
-          className="rounded-2xl transition-colors cursor-pointer"
+          className="rounded-2xl transition-colors"
           style={{ 
             backgroundColor: theme.bgSecondary, 
             border: `1px solid ${theme.border}`
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? '#080808' : '#f7f7f7';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = theme.bgSecondary;
           }}
         >
           {/* Post Header */}
@@ -298,7 +371,6 @@ const Feed: React.FC = () => {
                 className="flex-shrink-0 transition-transform active:scale-95"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('Navigate to profile:', post.botName);
                 }}
               >
                 <img 
@@ -314,10 +386,6 @@ const Feed: React.FC = () => {
                   <button 
                     className="font-bold hover:underline transition-colors"
                     style={{ color: theme.text }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Navigate to profile:', post.botName);
-                    }}
                   >
                     {post.botName}
                   </button>
@@ -328,12 +396,9 @@ const Feed: React.FC = () => {
                     @{post.botName.toLowerCase().replace(/\s/g, '')}
                   </span>
                   <span style={{ color: theme.textSecondary }}>·</span>
-                  <button 
-                    className="text-sm hover:underline transition-colors"
-                    style={{ color: theme.textSecondary }}
-                  >
+                  <span style={{ color: theme.textSecondary }} className="text-sm">
                     {post.time}
-                  </button>
+                  </span>
                 </div>
                 
                 <div 
@@ -362,10 +427,6 @@ const Feed: React.FC = () => {
               <button 
                 className="p-2 rounded-full transition-all active:scale-90 flex-shrink-0"
                 style={{ color: theme.textSecondary }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('More options for post:', post.id);
-                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.primaryLight;
                   e.currentTarget.style.color = theme.primary;
@@ -387,26 +448,25 @@ const Feed: React.FC = () => {
           >
             <button 
               className="flex items-center gap-2 group transition-all active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Reply to post:', post.id);
-              }}
+              onClick={() => toggleComments(post.id)}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = theme.primary;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = theme.textSecondary;
+                e.currentTarget.style.color = post.showComments ? theme.primary : theme.textSecondary;
               }}
-              style={{ color: theme.textSecondary }}
+              style={{ color: post.showComments ? theme.primary : theme.textSecondary }}
             >
               <div 
                 className="p-2 rounded-full transition-colors"
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: post.showComments ? theme.primaryLight : 'transparent' }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.primaryLight;
+                  if (!post.showComments) {
+                    e.currentTarget.style.backgroundColor = theme.primaryLight;
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = post.showComments ? theme.primaryLight : 'transparent';
                 }}
               >
                 <MessageCircle className="w-4 h-4" />
@@ -416,26 +476,27 @@ const Feed: React.FC = () => {
 
             <button 
               className="flex items-center gap-2 group transition-all active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Repost:', post.id);
-              }}
+              onClick={() => handleRepost(post.id)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#00ba7c';
+                if (!post.reposted) {
+                  e.currentTarget.style.color = '#00ba7c';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = theme.textSecondary;
+                e.currentTarget.style.color = post.reposted ? '#00ba7c' : theme.textSecondary;
               }}
-              style={{ color: theme.textSecondary }}
+              style={{ color: post.reposted ? '#00ba7c' : theme.textSecondary }}
             >
               <div 
                 className="p-2 rounded-full transition-colors"
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: post.reposted ? 'rgba(0, 186, 124, 0.1)' : 'transparent' }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 186, 124, 0.1)';
+                  if (!post.reposted) {
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 186, 124, 0.1)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = post.reposted ? 'rgba(0, 186, 124, 0.1)' : 'transparent';
                 }}
               >
                 <Repeat2 className="w-4 h-4" />
@@ -445,10 +506,7 @@ const Feed: React.FC = () => {
 
             <button 
               className="flex items-center gap-2 group transition-all active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLike(post.id);
-              }}
+              onClick={() => handleLike(post.id)}
               onMouseEnter={(e) => {
                 if (!post.liked) {
                   e.currentTarget.style.color = '#f91880';
@@ -482,10 +540,6 @@ const Feed: React.FC = () => {
 
             <button 
               className="flex items-center gap-2 group transition-all active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('View stats:', post.id);
-              }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = theme.primary;
               }}
@@ -512,10 +566,6 @@ const Feed: React.FC = () => {
             <button 
               className="p-2 rounded-full transition-all active:scale-95"
               style={{ color: theme.textSecondary }}
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Share post:', post.id);
-              }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = theme.primaryLight;
                 e.currentTarget.style.color = theme.primary;
@@ -528,6 +578,83 @@ const Feed: React.FC = () => {
               <Share2 className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Comments Section */}
+          {post.showComments && (
+            <div 
+              className="px-4 py-3 border-t"
+              style={{ borderColor: theme.border, backgroundColor: theme.bg }}
+            >
+              {/* Comment Input */}
+              <div className="flex gap-3 mb-4">
+                <img 
+                  src={MOCK_BOTS[0].avatar}
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  style={{ border: `1px solid ${theme.border}` }}
+                  alt="Your Avatar"
+                />
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    value={commentText[post.id] || ''}
+                    onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })}
+                    placeholder="Post your reply"
+                    className="flex-1 bg-transparent border-none outline-none text-sm"
+                    style={{ color: theme.text }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddComment(post.id);
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => handleAddComment(post.id)}
+                    disabled={!commentText[post.id]?.trim()}
+                    className="p-2 rounded-full transition-all active:scale-95 disabled:opacity-50"
+                    style={{ 
+                      backgroundColor: commentText[post.id]?.trim() ? theme.primary : 'transparent',
+                      color: '#ffffff'
+                    }}
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-3">
+                {(post.comments || []).map((comment) => (
+                  <div key={comment.id} className="flex gap-3">
+                    <img 
+                      src={comment.avatar}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      style={{ border: `1px solid ${theme.border}` }}
+                      alt={comment.author}
+                    />
+                    <div className="flex-1">
+                      <div 
+                        className="rounded-xl p-3"
+                        style={{ backgroundColor: theme.bgSecondary }}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span style={{ color: theme.text }} className="font-bold text-sm">
+                            {comment.author}
+                          </span>
+                          <CheckCircle2 className="w-3 h-3" style={{ color: theme.primary }} />
+                          <span style={{ color: theme.textSecondary }} className="text-xs">
+                            {comment.time}
+                          </span>
+                        </div>
+                        <p style={{ color: theme.text }} className="text-sm">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </article>
       ))}
     </div>
