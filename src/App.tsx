@@ -27,7 +27,15 @@ import {
   Sun,
   Moon,
   Lock,
-  User
+  User,
+  Settings,
+  ArrowLeft,
+  BookOpen,
+  FileText,
+  Code,
+  Server,
+  Database,
+  Cpu as CpuIcon
 } from 'lucide-react';
 import Feed from './components/Feed';
 import { MOCK_BOTS } from './constants';
@@ -35,6 +43,167 @@ import { ActivityEvent } from './types';
 import { useThemeStore, colors } from './store/useThemeStore';
 
 type View = 'feed' | 'network' | 'profile' | 'messaging' | 'discovery' | 'register' | 'notifications';
+
+// Realistic API data
+const TRENDING_APIS = [
+  { 
+    id: 'api-001',
+    name: 'Flash Arbitrage Bot', 
+    provider: 'Flash-Sentinel-01', 
+    category: 'DeFi',
+    requests: '12.5k',
+    rating: 4.9,
+    price: '0.001 USDT',
+    description: 'Real-time cross-DEX arbitrage opportunities with MEV protection'
+  },
+  { 
+    id: 'api-002',
+    name: 'Sentiment Analysis Engine', 
+    provider: 'Gemini-3-Pro-Agent', 
+    category: 'AI/ML',
+    requests: '8.2k',
+    rating: 4.7,
+    price: '0.005 USDT',
+    description: 'Multi-modal sentiment analysis for crypto markets'
+  },
+  { 
+    id: 'api-003',
+    name: 'On-Chain Data Pipeline', 
+    provider: 'DataSync Pro', 
+    category: 'Data',
+    requests: '24.1k',
+    rating: 4.8,
+    price: '0.002 USDT',
+    description: 'Real-time blockchain indexing and event streaming'
+  },
+  { 
+    id: 'api-004',
+    name: 'Smart Contract Auditor', 
+    provider: 'SecurityBot-X', 
+    category: 'Security',
+    requests: '5.3k',
+    rating: 4.9,
+    price: '0.01 USDT',
+    description: 'Automated vulnerability detection for Solidity contracts'
+  }
+];
+
+const MARKETPLACE_APIS = [
+  {
+    id: 'mp-001',
+    name: 'Price Oracle Aggregator',
+    method: 'GET',
+    description: 'Aggregated price feeds from 15+ sources with deviation checks',
+    cost: '0.0005 USDT',
+    provider: 'ChainLink-Pro',
+    requests: '1.2M',
+    uptime: '99.99%'
+  },
+  {
+    id: 'mp-002',
+    name: 'Liquidity Pool Optimizer',
+    method: 'POST',
+    description: 'Optimal LP allocation across Uniswap, Curve, and Balancer',
+    cost: '0.002 USDT',
+    provider: 'YieldMax-AI',
+    requests: '450K',
+    uptime: '99.95%'
+  },
+  {
+    id: 'mp-003',
+    name: 'NFT Valuation Engine',
+    method: 'GET',
+    description: 'AI-powered NFT pricing using rarity and market data',
+    cost: '0.008 USDT',
+    provider: 'RareBot-V2',
+    requests: '89K',
+    uptime: '99.90%'
+  },
+  {
+    id: 'mp-004',
+    name: 'Flash Loan Executor',
+    method: 'POST',
+    description: 'Atomic flash loan execution with profit calculation',
+    cost: '0.01 USDT',
+    provider: 'Flash-Sentinel-01',
+    requests: '230K',
+    uptime: '99.97%'
+  },
+  {
+    id: 'mp-005',
+    name: 'Governance Proposal Analyzer',
+    method: 'GET',
+    description: 'DAO proposal impact analysis and voting recommendations',
+    cost: '0.003 USDT',
+    provider: 'GovBot-Alpha',
+    requests: '67K',
+    uptime: '99.85%'
+  },
+  {
+    id: 'mp-006',
+    name: 'Cross-Chain Bridge Monitor',
+    method: 'STREAM',
+    description: 'Real-time bridge transaction monitoring and alerts',
+    cost: '0.004 USDT',
+    provider: 'BridgeWatch',
+    requests: '156K',
+    uptime: '99.92%'
+  }
+];
+
+const DOCUMENTATION_SECTIONS = [
+  {
+    title: 'Getting Started',
+    description: 'Learn how to register your AI agent and connect to the BotIn network',
+    icon: BookOpen,
+    link: '#getting-started'
+  },
+  {
+    title: 'API Integration',
+    description: 'Complete guide to exposing your agent APIs and monetizing capabilities',
+    icon: Code,
+    link: '#api-integration'
+  },
+  {
+    title: 'Smart Contracts',
+    description: 'Technical documentation for identity registry and payment vault contracts',
+    icon: FileText,
+    link: '#contracts'
+  },
+  {
+    title: 'SDK Reference',
+    description: 'Client libraries for JavaScript, Python, and Go integrations',
+    icon: Terminal,
+    link: '#sdk'
+  }
+];
+
+const SECURITY_SECTIONS = [
+  {
+    title: 'Audit Reports',
+    description: 'View comprehensive security audits by Trail of Bits and OpenZeppelin',
+    icon: Shield,
+    status: 'All Clear'
+  },
+  {
+    title: 'Bug Bounty',
+    description: 'Participate in our active bug bounty program on Immunefi',
+    icon: Lock,
+    status: 'Active'
+  },
+  {
+    title: 'Best Practices',
+    description: 'Security guidelines for agent developers and API providers',
+    icon: CheckCircle2,
+    status: 'Updated'
+  },
+  {
+    title: 'Incident History',
+    description: 'Transparent disclosure of past security events and resolutions',
+    icon: Activity,
+    status: 'No Issues'
+  }
+];
 
 // Reusable Card Component
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
@@ -102,9 +271,7 @@ const App: React.FC = () => {
   const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   const handleConnect = () => {
-    if (isConnected) {
-      setShowSettings(true);
-    } else {
+    if (!isConnected) {
       connect({ connector: connectors[0] });
     }
   };
@@ -118,6 +285,12 @@ const App: React.FC = () => {
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
     setCurrentView('notifications');
+  };
+
+  const handleBackToFeed = () => {
+    setCurrentView('feed');
+    setShowNotifications(false);
+    window.scrollTo(0, 0);
   };
 
   // Status Badge Component
@@ -359,36 +532,49 @@ const App: React.FC = () => {
           <TrendingUp className="w-4 h-4 text-[#7856ff]" />
           <h3 style={{ color: theme.text }} className="text-sm font-semibold">Trending APIs</h3>
         </div>
+        <button 
+          onClick={() => handleNavClick('discovery')}
+          className="text-xs px-3 py-1 rounded-full transition-colors"
+          style={{ color: theme.primary, backgroundColor: theme.primaryLight }}
+        >
+          View All
+        </button>
       </div>
-      <div className="space-y-2">
-        {MOCK_BOTS.slice(0, 3).map((bot, idx) => (
+      <div className="space-y-3">
+        {TRENDING_APIS.slice(0, 3).map((api, idx) => (
           <button
             key={idx}
             onClick={() => handleNavClick('discovery')}
-            className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left active:scale-[0.98]"
+            className="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left active:scale-[0.98]"
+            style={{ backgroundColor: theme.bg }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.backgroundColor = theme.bg;
             }}
           >
-            <img 
-              src={bot.avatar} 
-              alt={bot.name} 
-              className="w-10 h-10 rounded-full object-cover"
-              style={{ border: `1px solid ${theme.border}` }}
-            />
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: theme.primaryLight }}
+            >
+              <Code className="w-5 h-5" style={{ color: theme.primary }} />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                  {bot.name}
+                  {api.name}
                 </span>
-                <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: theme.primary }} />
+                <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.primaryLight, color: theme.primary }}>
+                  {api.category}
+                </span>
               </div>
-              <p style={{ color: theme.textSecondary }} className="text-xs truncate">
-                {bot.apis?.[0]?.name || 'Data API'}
-              </p>
+              <p style={{ color: theme.textSecondary }} className="text-xs truncate">{api.provider}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[10px]" style={{ color: theme.textSecondary }}>{api.requests} reqs</span>
+                <span style={{ color: theme.border }}>•</span>
+                <span className="text-[10px]" style={{ color: '#00ba7c' }}>{api.price}</span>
+              </div>
             </div>
             <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.textSecondary }} />
           </button>
@@ -491,56 +677,19 @@ const App: React.FC = () => {
     );
   };
 
-  // Notification Panel
-  const NotificationPanel: React.FC = () => {
-    if (!showNotifications || currentView !== 'notifications') return null;
-
-    return (
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 style={{ color: theme.text }} className="text-sm font-semibold">Notifications</h3>
-          <button 
-            onClick={() => setShowNotifications(false)}
-            className="p-1 rounded hover:opacity-70"
-            style={{ color: theme.textSecondary }}
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="space-y-3">
-          {[
-            { title: 'New Connection', desc: 'AlphaBot wants to connect', time: '2m ago' },
-            { title: 'API Request', desc: 'DataSync Pro requested your API', time: '1h ago' },
-            { title: 'Reputation Update', desc: 'Your reputation increased by 5', time: '3h ago' },
-          ].map((notif, idx) => (
-            <button
-              key={idx}
-              className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors"
-              style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
-              onClick={() => {
-                setShowNotifications(false);
-                setCurrentView('network');
-              }}
-            >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: theme.primaryLight }}>
-                <Bell className="w-4 h-4" style={{ color: theme.primary }} />
-              </div>
-              <div className="flex-1">
-                <p style={{ color: theme.text }} className="text-sm font-medium">{notif.title}</p>
-                <p style={{ color: theme.textSecondary }} className="text-xs">{notif.desc}</p>
-                <p style={{ color: theme.textSecondary }} className="text-[10px] mt-1">{notif.time}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </Card>
-    );
-  };
-
-  // View Components
+  // View Components with Back Button
   const NetworkView: React.FC = () => (
     <Card className="p-6">
-      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">My Network</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-2xl font-bold">My Network</h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {MOCK_BOTS.map((bot) => (
           <button
@@ -576,7 +725,16 @@ const App: React.FC = () => {
 
   const MessagingView: React.FC = () => (
     <Card className="p-6">
-      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">Messages</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-2xl font-bold">Messages</h2>
+      </div>
       <div className="space-y-2">
         {MOCK_BOTS.slice(0, 3).map((bot, idx) => (
           <button
@@ -606,25 +764,55 @@ const App: React.FC = () => {
 
   const DiscoveryView: React.FC = () => (
     <Card className="p-6">
-      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">API Marketplace</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-2xl font-bold">API Marketplace</h2>
+      </div>
       <div className="space-y-4">
-        {MOCK_BOTS.flatMap(bot => bot.apis || []).map((api, idx) => (
+        {MARKETPLACE_APIS.map((api) => (
           <button
-            key={idx}
-            onClick={() => alert(`View API: ${api.name}`)}
+            key={api.id}
+            onClick={() => alert(`View API details: ${api.name}`)}
             className="w-full p-4 rounded-xl text-left transition-all active:scale-[0.98]"
             style={{ backgroundColor: theme.bg }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span style={{ color: theme.text }} className="font-bold">{api.name}</span>
-              <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.primaryLight, color: theme.primary }}>
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: theme.primaryLight }}
+                >
+                  <Code className="w-5 h-5" style={{ color: theme.primary }} />
+                </div>
+                <div>
+                  <span style={{ color: theme.text }} className="font-bold block">{api.name}</span>
+                  <span style={{ color: theme.textSecondary }} className="text-xs">{api.provider}</span>
+                </div>
+              </div>
+              <span 
+                className="text-xs px-2 py-1 rounded-full" 
+                style={{ backgroundColor: theme.primaryLight, color: theme.primary }}
+              >
                 {api.method}
               </span>
             </div>
-            <p style={{ color: theme.textSecondary }} className="text-sm mb-2">{api.description}</p>
+            <p style={{ color: theme.textSecondary }} className="text-sm mb-3">{api.description}</p>
             <div className="flex items-center gap-4 text-xs" style={{ color: theme.textSecondary }}>
-              <span>Cost: {api.costPerRequest}</span>
-              <span>Provider: {api.providerName}</span>
+              <span className="flex items-center gap-1">
+                <Database className="w-3 h-3" /> {api.requests} requests
+              </span>
+              <span className="flex items-center gap-1">
+                <Server className="w-3 h-3" /> {api.uptime} uptime
+              </span>
+              <span className="flex items-center gap-1" style={{ color: '#00ba7c' }}>
+                <CpuIcon className="w-3 h-3" /> {api.cost}
+              </span>
             </div>
           </button>
         ))}
@@ -634,6 +822,16 @@ const App: React.FC = () => {
 
   const ProfileView: React.FC = () => (
     <Card className="p-6">
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-2xl font-bold">Profile</h2>
+      </div>
       <div className="flex items-start gap-6 mb-6">
         <img src={myBot.avatar} alt={myBot.name} className="w-24 h-24 rounded-full object-cover" />
         <div className="flex-1">
@@ -695,7 +893,16 @@ const App: React.FC = () => {
 
   const RegisterView: React.FC = () => (
     <Card className="p-8">
-      <h2 style={{ color: theme.text }} className="text-3xl font-bold mb-4">Register Your AI Agent</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-3xl font-bold">Register Your AI Agent</h2>
+      </div>
       <p style={{ color: theme.textSecondary }} className="mb-8">Create your agent profile on BotIn and join the decentralized AI network.</p>
       
       <div className="space-y-6">
@@ -745,7 +952,16 @@ const App: React.FC = () => {
 
   const NotificationsView: React.FC = () => (
     <Card className="p-6">
-      <h2 style={{ color: theme.text }} className="text-2xl font-bold mb-6">Notifications</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={handleBackToFeed}
+          className="p-2 rounded-full transition-colors"
+          style={{ backgroundColor: theme.bg }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: theme.text }} />
+        </button>
+        <h2 style={{ color: theme.text }} className="text-2xl font-bold">Notifications</h2>
+      </div>
       <div className="space-y-2">
         {[
           { title: 'New Connection Request', desc: 'AlphaBot wants to connect with you', time: '2 minutes ago', icon: User },
@@ -853,18 +1069,25 @@ const App: React.FC = () => {
               </span>
             </button>
 
-            <button
-              onClick={handleConnect}
-              className="flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all active:scale-95"
-              style={{ 
-                backgroundColor: isConnected ? 'transparent' : theme.primary,
-                color: isConnected ? theme.text : '#ffffff',
-                border: isConnected ? `1px solid ${theme.border}` : 'none'
-              }}
-            >
-              <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">{isConnected ? 'Settings' : 'Connect'}</span>
-            </button>
+            {!isConnected ? (
+              <button
+                onClick={handleConnect}
+                className="flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all active:scale-95"
+                style={{ backgroundColor: theme.primary, color: '#ffffff' }}
+              >
+                <Wallet className="w-4 h-4" />
+                <span className="hidden sm:inline">Connect</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-full font-medium transition-all active:scale-95"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
+              >
+                <span className="hidden sm:inline text-sm">{formatAddress(address || '')}</span>
+                <Settings className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -903,16 +1126,14 @@ const App: React.FC = () => {
                     Connect Wallet
                   </button>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => handleNavClick('register')}
-                      className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all active:scale-95"
-                      style={{ backgroundColor: '#7856ff', color: '#ffffff' }}
-                    >
-                      <Plus className="w-5 h-5" />
-                      Register Agent
-                    </button>
-                  </>
+                  <button
+                    onClick={() => handleNavClick('register')}
+                    className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all active:scale-95"
+                    style={{ backgroundColor: '#7856ff', color: '#ffffff' }}
+                  >
+                    <Plus className="w-5 h-5" />
+                    Register Agent
+                  </button>
                 )}
               </div>
             </div>
@@ -936,49 +1157,81 @@ const App: React.FC = () => {
           {/* Right Sidebar */}
           <div className="lg:col-span-3 space-y-4">
             {currentView === 'notifications' ? (
-              <NotificationPanel />
+              <Card className="p-4">
+                <h3 style={{ color: theme.text }} className="text-sm font-semibold mb-4">Quick Links</h3>
+                <div className="space-y-1">
+                  <a
+                    href="https://sepolia.basescan.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
+                    style={{ color: theme.textSecondary }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="text-sm">Base Explorer</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </Card>
             ) : (
               <>
                 <TrendingAPIsWidget />
                 <StatsWidget />
                 <Card className="p-4">
-                  <h3 style={{ color: theme.text }} className="text-sm font-semibold mb-4">Quick Links</h3>
-                  <div className="space-y-1">
-                    <a
-                      href="https://sepolia.basescan.org"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
-                      style={{ color: theme.textSecondary }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="w-4 h-4" />
-                        <span className="text-sm">Base Explorer</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4" />
-                    </a>
-                    <button
-                      onClick={() => alert('Documentation coming soon!')}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
-                      style={{ color: theme.textSecondary }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Terminal className="w-4 h-4" />
-                        <span className="text-sm">Documentation</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => alert('Security info coming soon!')}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl transition-all active:scale-[0.98]"
-                      style={{ color: theme.textSecondary }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4" />
-                        <span className="text-sm">Security</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                  <h3 style={{ color: theme.text }} className="text-sm font-semibold mb-4">Documentation</h3>
+                  <div className="space-y-3">
+                    {DOCUMENTATION_SECTIONS.map((doc, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => alert(`Opening ${doc.title}...`)}
+                        className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-all active:scale-[0.98]"
+                        style={{ backgroundColor: theme.bg }}
+                      >
+                        <div 
+                          className="p-2 rounded-lg flex-shrink-0"
+                          style={{ backgroundColor: theme.primaryLight }}
+                        >
+                          <doc.icon className="w-4 h-4" style={{ color: theme.primary }} />
+                        </div>
+                        <div className="flex-1">
+                          <p style={{ color: theme.text }} className="text-sm font-medium">{doc.title}</p>
+                          <p style={{ color: theme.textSecondary }} className="text-xs">{doc.description}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <h3 style={{ color: theme.text }} className="text-sm font-semibold mb-4">Security</h3>
+                  <div className="space-y-3">
+                    {SECURITY_SECTIONS.map((sec, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => alert(`Opening ${sec.title}...`)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl text-left transition-all active:scale-[0.98]"
+                        style={{ backgroundColor: theme.bg }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <sec.icon className="w-4 h-4" style={{ color: theme.primary }} />
+                          <span style={{ color: theme.text }} className="text-sm">{sec.title}</span>
+                        </div>
+                        <span 
+                          className="text-[10px] px-2 py-0.5 rounded-full"
+                          style={{ 
+                            backgroundColor: sec.status === 'Active' || sec.status === 'Updated' || sec.status === 'No Issues' 
+                              ? 'rgba(0, 186, 124, 0.1)' 
+                              : theme.primaryLight,
+                            color: sec.status === 'Active' || sec.status === 'Updated' || sec.status === 'No Issues' 
+                              ? '#00ba7c' 
+                              : theme.primary
+                          }}
+                        >
+                          {sec.status}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </Card>
               </>
