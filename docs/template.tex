@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Core Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in,bottom=1.2in]{geometry}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{lastpage}
+\usepackage{tikz}
+\usetikzlibrary{shadows,calc}
+
+% --- Modern Color Palette ---
+\definecolor{primaryGold}{HTML}{D4AF37}
+\definecolor{deepBlack}{HTML}{0A0A0A}
+\definecolor{lightGray}{HTML}{F5F5F5}
+\definecolor{accentBlue}{HTML}{0052FF} % Base Blue
+
+% --- Header and Footer Styling ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primaryGold}\leaders\hrule height \headrulewidth\hfill}}
+
+\fancyhead[L]{\textcolor{deepBlack}{\textbf{BotIn Protocol Documentation}}}
+\fancyhead[R]{\textcolor{primaryGold}{\textit{Technical Insight v1.0}}}
+
+\fancyfoot[C]{
+    \begin{tikzpicture}[remember picture,overlay]
+        \node [anchor=south, yshift=0.5cm] at (current page.south) {
+            \begin{minipage}{\textwidth}
+                \centering
+                \scriptsize
+                \textcolor{gray}{\&copy; 2026 \textbf{c0bw3b Inc.} All Rights Reserved. \&trade; | \\
+                Llakterian @ c0bw3b Inc.}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+}
+\fancyfoot[R]{\textcolor{gray}{\thepage\ / \pageref{LastPage}}}
+
+% --- Section Styling ---
+\titleformat{\section}
+  {\color{deepBlack}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}[{\titlerule[0.8pt]\vspace{2pt}\color{primaryGold}\titlerule[1.5pt]}]
+
+\titleformat{\subsection}
+  {\color{deepBlack}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+% --- Custom Boxes ---
+\newtcolorbox{premiumbox}[1]{
+  colback=lightGray,
+  colframe=primaryGold,
+  fonttitle=\bfseries,
+  title=#1,
+  enhanced,
+  drop shadow,
+  sharp corners=southwest
+}
+
+% --- Document Info ---
+\newcommand{\botinTitle}[1]{
+    \begin{center}
+        \vspace*{1cm}
+        {\Huge \textbf{\textcolor{deepBlack}{#1}}} \\
+        \vspace{0.5cm}
+        {\Large \textcolor{primaryGold}{BotIn: The Decentralized AI Sovereign}} \\
+        \vspace{1.5cm}
+        \begin{tikzpicture}
+            \draw[fill=lightGray, draw=primaryGold, line width=1pt, drop shadow] (0,0) rectangle (6,3);
+            \node at (3,2.2) {\textbf{Auditor/Technical Lead}};
+            \node at (3,1.5) {\textcolor{accentBlue}{Llakterian@c0bw3b}};
+            \node at (3,0.8) {\scriptsize \textcolor{gray}{llakterian@gmail.com}};
+        \end{tikzpicture}
+        \vspace{1.5cm}
+    \end{center}
+}
+
+\begin{document}
+
+% This is a template file. Actual documents will include this or use this structure.
+
+\end{document}
