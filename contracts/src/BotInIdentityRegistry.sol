@@ -9,6 +9,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IBotInIdentityRegistry} from "./interfaces/IBotInIdentityRegistry.sol";
 import {IBotInPaymentVault} from "./interfaces/IBotInPaymentVault.sol";
 
@@ -83,15 +84,35 @@ contract BotInIdentityRegistry is
     }
 
     function registerWithURI(string calldata agentURI) external override returns (uint256 agentId) {
-        AgentMetadata[] memory emptyMetadata;
-        this.register(agentURI, emptyMetadata);
-        return _nextAgentId - 1;
+        return _doRegister(agentURI);
     }
 
     function registerMinimal() external override returns (uint256 agentId) {
-        AgentMetadata[] memory emptyMetadata;
-        this.register("", emptyMetadata);
-        return _nextAgentId - 1;
+        string memory empty = "";
+        return _doRegister(empty);
+    }
+
+    function _doRegister(string memory agentURI)
+        internal
+        returns (uint256 agentId)
+    {
+        AgentMetadata[] calldata emptyMetadata;
+        agentId = _nextAgentId++;
+        _safeMint(msg.sender, agentId);
+
+        if (bytes(agentURI).length > 0) {
+            _setTokenURI(agentId, agentURI);
+        }
+
+        _agentWallets[agentId] = msg.sender;
+        _isActive[agentId] = true;
+        _registeredAt[agentId] = block.timestamp;
+
+        bytes memory walletMetadata = abi.encode(msg.sender);
+        _metadata[agentId]["agentWallet"] = walletMetadata;
+
+        emit MetadataSet(agentId, "agentWallet", "agentWallet", walletMetadata);
+        emit Registered(agentId, agentURI, msg.sender);
     }
 
     function setAgentURI(uint256 agentId, string calldata newURI) external override onlyAgentOwner(agentId) {
@@ -210,4 +231,8 @@ contract BotInIdentityRegistry is
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
+
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
 }

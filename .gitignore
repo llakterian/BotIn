@@ -26,4 +26,9 @@ dist-ssr
 # BotIn
 .env
 .env.local
-.env.example    
+.env.example
+
+# Forge
+out/
+cache/
+artifacts/
