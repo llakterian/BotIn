@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[context.production.environment]
+  SECRETS_SCAN_OMIT_PATHS = "contracts,dist,node_modules"
+  SECRETS_SCAN_OMIT_KEYS = "VITE_WALLETCONNECT_PROJECT_ID,VITE_GEMINI_API_KEY"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
