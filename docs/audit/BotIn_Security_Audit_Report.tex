@@ -4,6 +4,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in,bottom=1.2in]{geometry}
+\setlength{\headheight}{24pt}
+\addtolength{\topmargin}{-12pt}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{xcolor}
@@ -32,18 +34,8 @@
 \fancyhead[L]{\textcolor{deepBlack}{\textbf{BotIn Security Audit Report}}}
 \fancyhead[R]{\textcolor{primaryGold}{\textit{Confidential Document}}}
 
-\fancyfoot[L]{
-    \begin{tikzpicture}[remember picture,overlay]
-        \node [anchor=south west, xshift=1in, yshift=0.5cm] at (current page.south west) {
-            \begin{minipage}{\textwidth}
-                \scriptsize
-                \textcolor{gray}{2026 \textbf{c0bw3b Inc.} All Rights Reserved. | \\
-                Llakterian @ c0bw3b Inc.}
-            \end{minipage}
-        };
-    \end{tikzpicture}
-}
-\fancyfoot[R]{\textcolor{gray}{\thepage\ / \pageref{LastPage}}}
+\fancyfoot[L]{\scriptsize \textit{2026 \copyright \ \textbf{c0bw3b Inc.} All Rights Reserved. \texttrademark \ | Llakterian @ c0bw3b Inc.}}
+\fancyfoot[R]{\scriptsize \textcolor{gray}{\thepage\ / \pageref{LastPage}}}
 
 % --- Section Styling ---
 \titleformat{\section}

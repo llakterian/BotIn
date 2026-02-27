@@ -270,4 +270,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-2026 c0bw3b Inc. All Rights Reserved. | Llakterian @ c0bw3b Inc.
+*2026 © c0bw3b Inc. All Rights Reserved. ™ | Llakterian @ c0bw3b Inc.*

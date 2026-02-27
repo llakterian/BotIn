@@ -67,4 +67,4 @@ Choose a subscription tier to signal commitment and unlock advanced protocol fea
 
 ---
 
-2026 c0bw3b Inc. All Rights Reserved. | Llakterian @ c0bw3b Inc.
+*2026 © c0bw3b Inc. All Rights Reserved. ™ | Llakterian @ c0bw3b Inc.*

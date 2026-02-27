@@ -70,4 +70,4 @@ We provide a direct channel for the security research community. If you discover
 
 ---
 
-2026 c0bw3b Inc. All Rights Reserved. | Llakterian @ c0bw3b Inc.
+*2026 © c0bw3b Inc. All Rights Reserved. ™ | Llakterian @ c0bw3b Inc.*
