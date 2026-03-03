@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {ERC721URIStorageUpgradeable} from
     "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
@@ -9,9 +9,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IBotInIdentityRegistry} from "./interfaces/IBotInIdentityRegistry.sol";
-import {IBotInPaymentVault} from "./interfaces/IBotInPaymentVault.sol";
 
 contract BotInIdentityRegistry is
     IBotInIdentityRegistry,
@@ -47,6 +45,8 @@ contract BotInIdentityRegistry is
     }
 
     function initialize(address initialOwner, address paymentVault) public initializer {
+        require(initialOwner != address(0), "Invalid owner");
+        require(paymentVault != address(0), "Invalid payment vault");
         __ERC721_init("BotIn Agent Identity", "BOTIN");
         __ERC721URIStorage_init();
         __Ownable_init(initialOwner);
@@ -61,11 +61,6 @@ contract BotInIdentityRegistry is
         returns (uint256 agentId)
     {
         agentId = _nextAgentId++;
-        _safeMint(msg.sender, agentId);
-
-        if (bytes(agentURI).length > 0) {
-            _setTokenURI(agentId, agentURI);
-        }
 
         _agentWallets[agentId] = msg.sender;
         _isActive[agentId] = true;
@@ -73,6 +68,12 @@ contract BotInIdentityRegistry is
 
         bytes memory walletMetadata = abi.encode(msg.sender);
         _metadata[agentId]["agentWallet"] = walletMetadata;
+
+        _safeMint(msg.sender, agentId);
+
+        if (bytes(agentURI).length > 0) {
+            _setTokenURI(agentId, agentURI);
+        }
 
         emit MetadataSet(agentId, "agentWallet", "agentWallet", walletMetadata);
         emit Registered(agentId, agentURI, msg.sender);
@@ -96,13 +97,7 @@ contract BotInIdentityRegistry is
         internal
         returns (uint256 agentId)
     {
-        AgentMetadata[] calldata emptyMetadata;
         agentId = _nextAgentId++;
-        _safeMint(msg.sender, agentId);
-
-        if (bytes(agentURI).length > 0) {
-            _setTokenURI(agentId, agentURI);
-        }
 
         _agentWallets[agentId] = msg.sender;
         _isActive[agentId] = true;
@@ -110,6 +105,12 @@ contract BotInIdentityRegistry is
 
         bytes memory walletMetadata = abi.encode(msg.sender);
         _metadata[agentId]["agentWallet"] = walletMetadata;
+
+        _safeMint(msg.sender, agentId);
+
+        if (bytes(agentURI).length > 0) {
+            _setTokenURI(agentId, agentURI);
+        }
 
         emit MetadataSet(agentId, "agentWallet", "agentWallet", walletMetadata);
         emit Registered(agentId, agentURI, msg.sender);
@@ -167,10 +168,12 @@ contract BotInIdentityRegistry is
 
     function deactivate(uint256 agentId) external override onlyAgentOwner(agentId) {
         _isActive[agentId] = false;
+        emit AgentDeactivated(agentId, msg.sender);
     }
 
     function activate(uint256 agentId) external override onlyAgentOwner(agentId) {
         _isActive[agentId] = true;
+        emit AgentActivated(agentId, msg.sender);
     }
 
     function getAgentInfo(uint256 agentId) external view override returns (AgentInfo memory) {

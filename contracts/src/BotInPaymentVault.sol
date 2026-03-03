@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -23,6 +23,7 @@ contract BotInPaymentVault is IBotInPaymentVault, OwnableUpgradeable, UUPSUpgrad
     TierInfo[] private _tiers;
 
     uint256 private constant SECONDS_PER_DAY = 86400;
+    uint256 private _paymentNonce;
 
     modifier onlyVerifiedAgent(uint256 agentId) {
         require(_verifiedAgents[agentId], "Agent not verified");
@@ -35,6 +36,11 @@ contract BotInPaymentVault is IBotInPaymentVault, OwnableUpgradeable, UUPSUpgrad
         address treasury_,
         address identityRegistry_
     ) public initializer {
+        require(initialOwner != address(0), "Invalid owner");
+        require(usdt_ != address(0), "Invalid USDT");
+        require(treasury_ != address(0), "Invalid treasury");
+        require(identityRegistry_ != address(0), "Invalid identity registry");
+
         __Ownable_init(initialOwner);
         _usdt = usdt_;
         _treasury = treasury_;
@@ -54,7 +60,8 @@ contract BotInPaymentVault is IBotInPaymentVault, OwnableUpgradeable, UUPSUpgrad
         address payer = msg.sender;
         IERC20(_usdt).safeTransferFrom(payer, _treasury, amount);
 
-        bytes32 txHash = keccak256(abi.encodePacked(block.timestamp, payer, agentId, amount, tier));
+        uint256 nonce = _paymentNonce++;
+        bytes32 txHash = keccak256(abi.encodePacked(block.prevrandao, nonce, payer, agentId, amount, tier, block.timestamp));
 
         _payments[agentId] = Payment({
             payer: payer,

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IBotInReputationRegistry} from "./interfaces/IBotInReputationRegistry.sol";
 import {IBotInIdentityRegistry} from "./interfaces/IBotInIdentityRegistry.sol";
+
+uint256 constant DECIMALS = 18;
 
 contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable, UUPSUpgradeable {
     address private _identityRegistry;
@@ -27,6 +29,7 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
     }
 
     function initialize(address identityRegistry_) public initializer {
+        require(identityRegistry_ != address(0), "Invalid identity registry");
         __Ownable_init(msg.sender);
         _identityRegistry = identityRegistry_;
     }
@@ -41,7 +44,7 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
         string calldata feedbackURI,
         bytes32 feedbackHash
     ) external override validAgent(agentId) notAgentOwner(agentId) {
-        require(valueDecimals <= 18, "Invalid decimals");
+        require(valueDecimals <= DECIMALS, "Invalid decimals");
 
         uint64 feedbackIndex = _lastFeedbackIndex[agentId][msg.sender] + 1;
         _lastFeedbackIndex[agentId][msg.sender] = feedbackIndex;
@@ -185,7 +188,7 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
                     bool tag2Match = bytes(tag2).length == 0 || keccak256(bytes(fb.tag2)) == keccak256(bytes(tag2));
 
                     if (tag1Match && tag2Match) {
-                        int256 normalized = int256(fb.value) * int256(10 ** (18 - fb.valueDecimals));
+                        int256 normalized = int256(fb.value) * int256(10 ** (DECIMALS - fb.valueDecimals));
                         total += normalized;
                         validCount++;
                         if (fb.valueDecimals > decimals) decimals = fb.valueDecimals;
@@ -196,7 +199,7 @@ contract BotInReputationRegistry is IBotInReputationRegistry, OwnableUpgradeable
 
         if (validCount > 0) {
             summaryValue = int128(total / int256(uint256(validCount)));
-            summaryValueDecimals = 18;
+            summaryValueDecimals = uint8(DECIMALS);
         }
         count = validCount;
     }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity >=0.8.0;
 
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
@@ -26,6 +26,8 @@ interface IBotInIdentityRegistry is IERC721, IERC721Metadata {
     event MetadataSet(uint256 indexed agentId, string indexed indexedMetadataKey, string metadataKey, bytes metadataValue);
     event AgentWalletSet(uint256 indexed agentId, address indexed newWallet);
     event SubscriptionUpdated(uint256 indexed agentId, uint256 tier, uint256 expiry);
+    event AgentActivated(uint256 indexed agentId, address indexed activator);
+    event AgentDeactivated(uint256 indexed agentId, address indexed deactivator);
 
     function register(string calldata agentURI, AgentMetadata[] calldata metadata) external returns (uint256 agentId);
     function registerWithURI(string calldata agentURI) external returns (uint256 agentId);

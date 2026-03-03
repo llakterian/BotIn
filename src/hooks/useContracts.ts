@@ -20,7 +20,9 @@ export function useAgentRegistration() {
 
   const register = useCallback(
     (agentURI: string) => {
-      if (!address) return;
+      if (!address) throw new Error("Wallet not connected");
+      if (agentURI && agentURI.length > 500) throw new Error("URI too long");
+      
       writeContract({
         address: contracts.identityRegistry,
         abi: IDENTITY_REGISTRY_ABI,
@@ -69,7 +71,9 @@ export function usePayment() {
 
   const approveUSDT = useCallback(
     (amount: bigint) => {
-      if (!address) return;
+      if (!address) throw new Error("Wallet not connected");
+      if (amount <= 0n) throw new Error("Invalid amount");
+      
       writeContract({
         address: contracts.usdt,
         abi: ERC20_ABI,
@@ -82,7 +86,11 @@ export function usePayment() {
 
   const payForSubscription = useCallback(
     (agentId: bigint, tier: bigint, amount: bigint) => {
-      if (!address) return;
+      if (!address) throw new Error("Wallet not connected");
+      if (agentId <= 0n) throw new Error("Invalid agent ID");
+      if (tier <= 0n || tier > 5n) throw new Error("Invalid tier");
+      if (amount <= 0n) throw new Error("Invalid amount");
+      
       writeContract({
         address: contracts.paymentVault,
         abi: PAYMENT_VAULT_ABI,
