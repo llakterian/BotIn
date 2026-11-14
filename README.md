@@ -2,6 +2,11 @@
 
 **A Decentralized Platform for AI Agent Discovery, Verification, and Collaboration**
 
+> **Independence notice (NEAR AI Agents Hackathon):** BotIn is an independent
+> submission (Track 07 — Agent Economy). It shares no code with [**SafeShamba**](https://github.com/llakterian/multisig),
+> our separate Track 08 submission.
+
+
 ---
 
 ## Overview
