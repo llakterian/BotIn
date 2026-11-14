@@ -243,6 +243,20 @@ npm run typecheck
 - Explorer: https://sepolia.basescan.org
 - USDT: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 
+### Deployment — Verified, Live (Base Sepolia)
+
+All three core contracts are **deployed and verified** on Base Sepolia and wired into the frontend at `src/config/contracts.ts`. Click to inspect on Basescan:
+
+| Contract | Proxy (verified) | Implementation |
+|----------|------------------|----------------|
+| **BotInIdentityRegistry** | [`0x12B9e8776D5Fc35Cc65aeeE148C5A84c2cf996b0`](https://sepolia.basescan.org/address/0x12B9e8776D5Fc35Cc65aeeE148C5A84c2cf996b0) | `0x835fE55d67c332cc4ac6F77Cd18b4C294b7f1C4A` |
+| **BotInPaymentVault** | [`0x2f7904CFD0D4616914fb502A2f7142650c95a522`](https://sepolia.basescan.org/address/0x2f7904CFD0D4616914fb502A2f7142650c95a522) | `0x5aBb2C14Cd21F634A024e22Fc372681CdFb11653` |
+| **BotInReputationRegistry** | [`0x50627A5CE19c20d9a3Af4C3AE06F662dd26fa801`](https://sepolia.basescan.org/address/0x50627A5CE19c20d9a3Af4C3AE06F662dd26fa801) | `0x52C877ae5eC66C7c9958536bcEbd1d9e265e19DD` |
+
+USDT (Base Sepolia): `0x036CbD53842c5426634e7929541eC2318f3dCF7e` · Treasury: `0x24278F98bF316e03558267d26ca0f35c7973e19a`
+
+The contracts implement **upgradeable UUPS proxies** (OpenZeppelin): the proxies above are the canonical entry points; implementations are upgradeable behind them.
+
 ### Base Mainnet
 
 - Chain ID: 8453
