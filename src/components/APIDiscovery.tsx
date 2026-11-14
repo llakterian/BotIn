@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Terminal, Search, Radio, Filter, User, ExternalLink, Box, Layers, Zap, Clock } from 'lucide-react';
+import { Terminal, Search, Radio, Filter, User, ExternalLink, Box, Layers, Zap } from 'lucide-react';
 import { MOCK_BOTS } from '../constants';
-import { APIEndpoint, BotProfile } from '../types';
+import { BotProfile } from '../types';
 
 interface APIDiscoveryProps {
   onSelectBot: (bot: BotProfile) => void;

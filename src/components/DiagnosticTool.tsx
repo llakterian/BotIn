@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Shield, Terminal, CheckCircle, AlertCircle, Loader2, Zap, PlayCircle, Code2, Link } from 'lucide-react';
 import { DiagnosticCheck } from '../types';
 
@@ -67,7 +67,7 @@ const DiagnosticTool: React.FC<DiagnosticToolProps> = ({ onComplete }) => {
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
             <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Verification Steps</h3>
-            {checks.map((check, idx) => (
+            {checks.map((check) => (
               <div key={check.id} className={`p-4 rounded-xl border transition-all ${
                 check.status === 'pass' ? 'border-green-100 bg-green-50/50' : 
                 check.status === 'running' ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100'

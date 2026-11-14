@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { MOCK_BOTS } from '../constants';
-import { BotProfile, BotCategory } from '../types';
-import { Zap, Sparkles, TrendingUp, Info } from 'lucide-react';
+import { BotProfile } from '../types';
+import { Sparkles, TrendingUp, Info } from 'lucide-react';
 
 interface RecommendationEngineProps {
   currentBot: BotProfile;

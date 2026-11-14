@@ -98,7 +98,8 @@ contract BotInSecurityTest is Test {
         vm.startPrank(user1);
         uint256 agentId = identityRegistry.registerWithURI("ipfs://QmTest");
 
-        address newWallet = makeAddr("newWallet");
+        uint256 newWalletKey = 0xA11CE;
+        address newWallet = vm.addr(newWalletKey);
         uint256 deadline = block.timestamp + 1 hours;
         
         bytes32 structHash = keccak256(
@@ -121,7 +122,7 @@ contract BotInSecurityTest is Test {
         );
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainHash, structHash));
         
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(1, digest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(newWalletKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
         identityRegistry.setAgentWallet(agentId, newWallet, deadline, signature);

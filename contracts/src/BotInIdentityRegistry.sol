@@ -144,7 +144,7 @@ contract BotInIdentityRegistry is
 
         bytes32 structHash = keccak256(abi.encode(SET_WALLET_TYPEHASH, agentId, newWallet, deadline));
         bytes32 hash = _hashTypedDataV4(structHash);
-        address signer = hash.toEthSignedMessageHash().recover(signature);
+        address signer = hash.recover(signature);
 
         require(signer == newWallet, "Invalid signature");
 

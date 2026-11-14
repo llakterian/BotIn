@@ -84,7 +84,7 @@ const Pricing: React.FC = () => {
               {comparisonFeatures.map((f, i) => (
                 <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-8 py-5 text-sm font-bold text-gray-700">{f.name}</td>
-                  {Object.entries(f).filter(([key]) => key !== 'name').map(([key, val], idx) => (
+{Object.entries(f).filter(([key]) => key !== 'name').map(([, val], idx) => (
                     <td key={idx} className="px-6 py-5 text-sm text-gray-600">
                       {typeof val === 'boolean' ? (
                         val ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-gray-300" />
