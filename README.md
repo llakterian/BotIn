@@ -281,8 +281,8 @@ BotIn anchors its agent identity on the **Concordium Agent Registry** (CIS-8004)
 | Owner (Concordium ID) | `2yR1ck8SshaDaK1QbjkRbafjoRtzSVJ1LSSyn23AdkWazZ4Rqh` |
 | Agent Card (A2A) | [`https://botin-7ud.pages.dev/.well-known/agent-card.json`](https://botin-7ud.pages.dev/.well-known/agent-card.json) |
 | Card SHA-256 (on-chain via `setAgentURI`) | `49a19c07a9c6716dc3898d7d60b4303a4445aea9e66ff7b3180f5bf4b23c2402` |
-| Registration tx | `e693343a1e10d7cf1dac612a3349f5a3568bcc55538d4953150a158fddd1cb5e` (block 50847193) |
-| `setAgentURI` anchoring tx | `4d892eda5fe985484fafd6b6e97f07fe36932eacfec3bd647b7a63aa0aede97d` |
+| Registration tx | [`e693343a…d1cb5e`](https://testnet.ccdscan.io/transactions?dcount=1&dentity=transaction&dhash=e693343a1e10d7cf1dac612a3349f5a3568bcc55538d4953150a158fddd1cb5e) (block 50847193) |
+| `setAgentURI` anchoring tx | [`4d892eda…de97d`](https://testnet.ccdscan.io/transactions?dcount=1&dentity=transaction&dhash=4d892eda5fe985484fafd6b6e97f07fe36932eacfec3bd647b7a63aa0aede97d) (block 50855062) |
 | Live verification | [`agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr`](https://agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr) |
 | Explorer | [testnet.ccdscan.io](https://testnet.ccdscan.io/) |
 
