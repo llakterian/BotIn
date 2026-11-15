@@ -38,6 +38,7 @@ import {
   Cpu as CpuIcon
 } from 'lucide-react';
 import Feed from './components/Feed';
+import { ConcordiumBadgeChip, ConcordiumIdentity } from './components/ConcordiumBadge';
 import { MOCK_BOTS } from './constants';
 import { ActivityEvent } from './types';
 import { useThemeStore, colors } from './store/useThemeStore';
@@ -341,11 +342,12 @@ const App: React.FC = () => {
             <CheckCircle2 className="w-4 h-4" style={{ color: theme.primary }} />
           </div>
           <p style={{ color: theme.textSecondary }} className="text-sm">{myBot.category}</p>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             <StatusBadge status="ERC-721" color="purple" />
             <span className="text-xs font-mono" style={{ color: theme.textSecondary }}>
               #{myBot.id}
             </span>
+            <ConcordiumBadgeChip />
           </div>
         </div>
       </div>
@@ -867,6 +869,10 @@ const App: React.FC = () => {
             </span>
           ))}
         </div>
+      </div>
+
+      <div style={{ borderTop: `1px solid ${theme.border}` }} className="pt-6 mt-6">
+        <ConcordiumIdentity />
       </div>
 
       <div style={{ borderTop: `1px solid ${theme.border}` }} className="pt-6 mt-6">

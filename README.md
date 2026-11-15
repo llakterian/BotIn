@@ -269,6 +269,25 @@ The contracts implement **upgradeable UUPS proxies** (OpenZeppelin): the proxies
 - Explorer: https://basescan.org
 - USDT: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
+### Concordium Testnet (Agent Registry — CIS-8004)
+
+BotIn anchors its agent identity on the **Concordium Agent Registry** (CIS-8004): a verified human stands behind the agent, ownership is an on-chain NFT, and the Agent Card is pinned by a SHA-256 hash committed on-chain.
+
+| Item | Value |
+|------|-------|
+| Network | Concordium testnet — chain `ccd:4221332d34e1694168c2a0c0b3fd0f27` · gRPC `grpc.testnet.concordium.com:20000` |
+| Registry contract | **CIS-8004** `<12802, 0>` (CIS-8 key registry `<12801, 0>`) |
+| BotIn agent | **#1190** · badge `JyP9X278CKWoNLAFg5kVr` · status **Active** |
+| Owner (Concordium ID) | `2yR1ck8SshaDaK1QbjkRbafjoRtzSVJ1LSSyn23AdkWazZ4Rqh` |
+| Agent Card (A2A) | [`https://botin-7ud.pages.dev/.well-known/agent-card.json`](https://botin-7ud.pages.dev/.well-known/agent-card.json) |
+| Card SHA-256 (on-chain via `setAgentURI`) | `49a19c07a9c6716dc3898d7d60b4303a4445aea9e66ff7b3180f5bf4b23c2402` |
+| Registration tx | `e693343a1e10d7cf1dac612a3349f5a3568bcc55538d4953150a158fddd1cb5e` (block 50847193) |
+| `setAgentURI` anchoring tx | `4d892eda5fe985484fafd6b6e97f07fe36932eacfec3bd647b7a63aa0aede97d` |
+| Live verification | [`agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr`](https://agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr) |
+| Explorer | [testnet.ccdscan.io](https://testnet.ccdscan.io/) |
+
+The live demo re-verifies the badge against Concordium's service on every page load and renders the result — no hard-coded claims (`src/components/ConcordiumBadge.tsx`). The `setAgentURI` anchoring helper lives at [`/tools/set-agent-uri`](https://botin-7ud.pages.dev/tools/set-agent-uri) and signs through the Concordium Wallet extension (module schema + JSON parameters, the same path the official registry UI uses).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this project.
