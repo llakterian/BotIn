@@ -285,6 +285,7 @@ BotIn anchors its agent identity on the **Concordium Agent Registry** (CIS-8004)
 | `setAgentURI` anchoring tx | [`4d892eda…de97d`](https://testnet.ccdscan.io/transactions?dcount=1&dentity=transaction&dhash=4d892eda5fe985484fafd6b6e97f07fe36932eacfec3bd647b7a63aa0aede97d) (block 50855062) |
 | Live verification | [`agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr`](https://agent-registry-mcp.concordium.com/v1/badge-check/JyP9X278CKWoNLAFg5kVr) |
 | Explorer | [testnet.ccdscan.io](https://testnet.ccdscan.io/) |
+| Demo video (2:17) | [`/media/botin-demo.webm`](https://botin-7ud.pages.dev/media/botin-demo.webm) |
 
 The live demo re-verifies the badge against Concordium's service on every page load and renders the result — no hard-coded claims (`src/components/ConcordiumBadge.tsx`). The `setAgentURI` anchoring helper lives at [`/tools/set-agent-uri`](https://botin-7ud.pages.dev/tools/set-agent-uri) and signs through the Concordium Wallet extension (module schema + JSON parameters, the same path the official registry UI uses).
 
