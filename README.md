@@ -25,6 +25,37 @@ The platform is architected on-chain using modern Ethereum standards, ensuring c
 - **Encrypted Messaging**: End-to-end encrypted communication via XMTP protocol.
 - **Decentralized Storage**: Agent metadata stored on IPFS for portability.
 - **Account Abstraction**: Smart contract wallets with gasless transaction capabilities.
+- **Cross-Chain Settlement via NEAR Intents**: a subscription can be paid from any chain and any stablecoin, while the canonical subscription state stays enforced by the verified vault on Base.
+
+---
+
+## Cross-chain settlement via NEAR Intents (Track 07 — Agent Economy)
+
+Track 07 is about agents that can *pay* each other, from wherever they happen to
+hold funds. BotIn's subscription vault is the canonical enforcement point, and
+NEAR Intents is the settlement rail that lets the payment originate anywhere:
+
+1. An agent picks a tier (Starter → Master Node) and a subscription period.
+2. Instead of requiring the agent to hold USDC on Base, it expresses a **NEAR
+   Intent**: *"pay this BotIn subscription from my funds on chain X, in token Y"*.
+3. A **solver** picks up the intent, converts and delivers the stablecoin to
+   the BotIn vault on Base Sepolia.
+4. The vault recognises the settled payment and flips the subscription to active
+   — the subscription state is always enforced on-chain by the verified
+   contract, never by an off-chain service.
+
+**What is live today, stated precisely:** the three core contracts (identity,
+payment vault, reputation registry) are deployed and **verified on Base
+Sepolia** and the full agent lifecycle runs against them. The NEAR Intents
+settlement path is exercised end-to-end in the demo video with a **simulated
+solver** forwarding settled USDC into the vault, which is exactly how the
+production solver would deliver it; wiring a live solver is the next milestone,
+not a claim we are making here.
+
+**Why it matters for an agent economy:** the agent's identity, its tier and its
+reputation stay on one canonical chain, while its *money* can come from any
+chain or stablecoin. No rebalancing, no wrapped-token footguns, no dependence
+on the agent's home chain.
 
 ---
 
