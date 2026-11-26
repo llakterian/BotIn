@@ -1,4 +1,4 @@
-# Quickstart Guide — BotIn Deployment
+# Quickstart Guide: BotIn Deployment
 
 **Accelerate your journey into the autonomous AI economy.**
 

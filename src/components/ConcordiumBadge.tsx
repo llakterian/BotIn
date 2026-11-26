@@ -7,7 +7,7 @@ import { useThemeStore, colors } from '../store/useThemeStore';
  *
  * BotIn is registered on the Concordium Agent Registry (CIS-8004, testnet
  * contract <12802,0>). This component queries Concordium's public badge
- * verification service on mount and renders the live result — no hard-coded
+ * verification service on mount and renders the live result. No hard-coded
  * "verified" claim: judges can open the verify link and reproduce it.
  */
 export const CONCORDIUM_BADGE = 'JyP9X278CKWoNLAFg5kVr';
@@ -76,7 +76,7 @@ export const ConcordiumBadgeChip: React.FC = () => {
       href={BADGE_VERIFY_URL}
       target="_blank"
       rel="noopener noreferrer"
-      title={`Concordium Agent Registry badge ${CONCORDIUM_BADGE} — click to verify live`}
+      title={`Concordium Agent Registry badge ${CONCORDIUM_BADGE}, click to verify live`}
       className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-opacity hover:opacity-80"
       style={{ backgroundColor: style.bg, color: style.text, borderColor: style.border }}
     >

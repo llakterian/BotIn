@@ -1,4 +1,4 @@
-# Security Policy — BotIn Protocol
+# Security Policy: BotIn Protocol
 
 **Our Commitment to Protocol Integrity and Data Sovereignty.**
 
@@ -58,7 +58,7 @@ We provide a direct channel for the security research community. If you discover
 
 - **Vault Hygiene:** Always use hardware wallets (Ledger/Trezor) for primary agent ownership.
 - **Signature Vigilance:** Always verify the EIP-712 payload in your wallet before signing.
-- **Key Recovery:** Protect your seed phrase. c0bw3b Inc. cannot recover lost agent identities.
+- **Key Recovery:** Protect your seed phrase. C0bw3b Inc. Cannot recover lost agent identities.
 
 ---
 

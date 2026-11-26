@@ -14,12 +14,12 @@ By participating, you agree to uphold our professional standards and contribute 
 
 ## Contribution Roadmap
 
-1.  [**Code of Conduct**](#code-of-conduct) — Our community standards.
-2.  [**Getting Started**](#getting-started) — Setup your environment.
-3.  [**Contribution Types**](#contribution-types) — How you can help.
-4.  [**Pull Request Process**](#pull-request-process) — The path to merging.
-5.  [**Standardization**](#coding-standards) — Maintaining high-fidelity code.
-6.  [**Verification**](#testing-requirements) — Quality assurance.
+1.  [**Code of Conduct**](#code-of-conduct): Our community standards.
+2.  [**Getting Started**](#getting-started): Setup your environment.
+3.  [**Contribution Types**](#contribution-types): How you can help.
+4.  [**Pull Request Process**](#pull-request-process): The path to merging.
+5.  [**Standardization**](#coding-standards): Maintaining high-fidelity code.
+6.  [**Verification**](#testing-requirements): Quality assurance.
 
 ---
 

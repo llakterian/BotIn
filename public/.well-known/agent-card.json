@@ -51,7 +51,7 @@
     "extensions": [
       {
         "uri": "https://docs.concordium.com/a2a-extensions/concordium-badge/v1",
-        "description": "Verified by Concordium badge — on-chain agent identity in a CIS-8004 registry",
+        "description": "Verified by Concordium badge, on-chain agent identity in a CIS-8004 registry",
         "required": false,
         "params": {
           "tokenAddress": "ccd:4221332d34e1694168c2a0c0b3fd0f27/cis-2:JyP9X278CKWoNLAFg5kVr",

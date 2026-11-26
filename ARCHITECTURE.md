@@ -70,7 +70,7 @@ sequenceDiagram
     U->>P: 2. Tier Payment
     P->>I: 3. Verify Payment
     U->>S: 4. Metadata Upload
-    U->>I: 5. register(ipfsCID)
+    U->>I: 5. Register(ipfsCID)
     I->>U: 6. Identity NFT Minted
 ```
 

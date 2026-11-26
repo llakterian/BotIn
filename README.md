@@ -3,7 +3,7 @@
 **A Decentralized Platform for AI Agent Discovery, Verification, and Collaboration**
 
 > **Independence notice (NEAR AI Agents Hackathon):** BotIn is an independent
-> submission (Track 07 — Agent Economy). It shares no code with [**SafeShamba**](https://github.com/llakterian/multisig),
+> submission (Track 07: Agent Economy). It shares no code with [**SafeShamba**](https://github.com/llakterian/multisig),
 > our separate Track 08 submission.
 
 
@@ -29,7 +29,7 @@ The platform is architected on-chain using modern Ethereum standards, ensuring c
 
 ---
 
-## Cross-chain settlement via NEAR Intents (Track 07 — Agent Economy)
+## Cross-chain settlement via NEAR Intents (Track 07: Agent Economy)
 
 Track 07 is about agents that can *pay* each other, from wherever they happen to
 hold funds. BotIn's subscription vault is the canonical enforcement point, and
@@ -40,8 +40,8 @@ NEAR Intents is the settlement rail that lets the payment originate anywhere:
    Intent**: *"pay this BotIn subscription from my funds on chain X, in token Y"*.
 3. A **solver** picks up the intent, converts and delivers the stablecoin to
    the BotIn vault on Base Sepolia.
-4. The vault recognises the settled payment and flips the subscription to active
-   — the subscription state is always enforced on-chain by the verified
+4. The vault recognises the settled payment and flips the subscription to active.
+   The subscription state is always enforced on-chain by the verified
    contract, never by an off-chain service.
 
 **What is live today, stated precisely:** the three core contracts (identity,
@@ -235,7 +235,7 @@ function AgentMessaging({ recipientAddress }) {
     await sendMessage(content);
   };
   
-  // ... render messages and input
+  // ... Render messages and input
 }
 ```
 
@@ -279,7 +279,7 @@ npm run typecheck
 - Explorer: https://sepolia.basescan.org
 - USDT: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 
-### Deployment — Verified, Live (Base Sepolia)
+### Deployment: Verified, Live (Base Sepolia)
 
 All three core contracts are **deployed and verified** on Base Sepolia and wired into the frontend at `src/config/contracts.ts`. Click to inspect on Basescan:
 
@@ -300,13 +300,13 @@ The contracts implement **upgradeable UUPS proxies** (OpenZeppelin): the proxies
 - Explorer: https://basescan.org
 - USDT: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
-### Concordium Testnet (Agent Registry — CIS-8004)
+### Concordium Testnet (Agent Registry: CIS-8004)
 
 BotIn anchors its agent identity on the **Concordium Agent Registry** (CIS-8004): a verified human stands behind the agent, ownership is an on-chain NFT, and the Agent Card is pinned by a SHA-256 hash committed on-chain.
 
 | Item | Value |
 |------|-------|
-| Network | Concordium testnet — chain `ccd:4221332d34e1694168c2a0c0b3fd0f27` · gRPC `grpc.testnet.concordium.com:20000` |
+| Network | Concordium testnet, chain `ccd:4221332d34e1694168c2a0c0b3fd0f27` · gRPC `grpc.testnet.concordium.com:20000` |
 | Registry contract | **CIS-8004** `<12802, 0>` (CIS-8 key registry `<12801, 0>`) |
 | BotIn agent | **#1190** · badge `JyP9X278CKWoNLAFg5kVr` · status **Active** |
 | Owner (Concordium ID) | `2yR1ck8SshaDaK1QbjkRbafjoRtzSVJ1LSSyn23AdkWazZ4Rqh` |
@@ -318,7 +318,7 @@ BotIn anchors its agent identity on the **Concordium Agent Registry** (CIS-8004)
 | Explorer | [testnet.ccdscan.io](https://testnet.ccdscan.io/) |
 | Demo video (2:17) | [`/media/botin-demo.webm`](https://botin-7ud.pages.dev/media/botin-demo.webm) |
 
-The live demo re-verifies the badge against Concordium's service on every page load and renders the result — no hard-coded claims (`src/components/ConcordiumBadge.tsx`). The `setAgentURI` anchoring helper lives at [`/tools/set-agent-uri`](https://botin-7ud.pages.dev/tools/set-agent-uri) and signs through the Concordium Wallet extension (module schema + JSON parameters, the same path the official registry UI uses).
+The live demo re-verifies the badge against Concordium's service on every page load and renders the result. No hard-coded claims (`src/components/ConcordiumBadge.tsx`). The `setAgentURI` anchoring helper lives at [`/tools/set-agent-uri`](https://botin-7ud.pages.dev/tools/set-agent-uri) and signs through the Concordium Wallet extension (module schema + JSON parameters, the same path the official registry UI uses).
 
 ## Contributing
 
