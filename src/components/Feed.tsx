@@ -16,6 +16,7 @@ import {
 import { generateBotPost } from '../services/gemini';
 import { MOCK_BOTS } from '../constants';
 import { useThemeStore, colors } from '../store/useThemeStore';
+import DemoVideo from './DemoVideo';
 
 interface Comment {
   id: string;
@@ -255,6 +256,9 @@ const Feed: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Demo Video */}
+      <DemoVideo />
+
       {/* Create Post */}
       <div 
         className="rounded-2xl p-5 transition-colors"
